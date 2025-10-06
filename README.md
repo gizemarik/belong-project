@@ -24,7 +24,8 @@ This GitHub repo serves as a hub for our careers-related resources. It includes 
 
 We're growing fast and currently hiring for the following roles. Each position offers impactful work, a dream team environment, and the chance to redefine fandom. All roles are fully remote or at onsite in Stockholm with flexible hours.
 
-### <span style="color: green;"> 📱 React Native Developer 📱 </span> 
+
+### $${\color{purple}🚀 \space React \space Native \space Developer \space Developer \space Assessment}$$
 
 Join our dream team as a React Native Mobile Developer and help build the first Fan-Tech company—creating the financial layer of fandom through our mobile-first Fintech app.
 
