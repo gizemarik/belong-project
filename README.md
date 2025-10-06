@@ -60,7 +60,7 @@ Belong is transforming the music industry by bridging artists and their true fan
 
 To apply, email your resume, GitHub/portfolio, and a brief note on why you're excited about Belong to careers@belong.app. Reference the React Native tasks in this repo for your application.
 
-### Frontend React Developer
+### $${\color{green}🚀 \space Frontend \space React \space Developer \space Developer}$$
 
 We're seeking a talented Frontend React Developer to craft intuitive, pixel-perfect user interfaces for our web and mobile-web experiences. You'll focus on building responsive components that bring our fan engagement features to life, ensuring seamless interactions across devices.
 
@@ -88,7 +88,7 @@ Same as above—fully remote, impactful role, and a collaborative team. Your con
 
 Apply to careers@belong.app with your resume, portfolio, and references to frontend tasks in this repo.
 
-### Backend Developer (Node.js/TypeScript)
+### $${\color{green}🚀 \space Backend \space Developer \space (Node.js/TypeScript)}$$
 
 (Note: Assuming "Backend React Developer" refers to our backend stack, which uses TypeScript/Node.js with Fastify—let me know if this needs adjustment!)  
 
