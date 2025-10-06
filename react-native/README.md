@@ -560,7 +560,7 @@ MusicRewards/
 - [ ] Proper audio session management
 
 #### $${\color{orange}Testing \space Scenarios:}$$
-- [ ] Install and run on both iOS and Android
+- [ ] Install and run on iOS simulator
 - [ ] Audio plays correctly with system volume
 - [ ] Points increment during playback
 - [ ] App state persists after restart
