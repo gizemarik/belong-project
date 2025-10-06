@@ -10,6 +10,8 @@ Belong is built on three pillars: Fan Engagement & Rewards , Banking & Financial
 
 We're a passionate, music-loving team redefining fandom and fintech. If you're excited about empowering artists as CEOs of their brands and turning fans into a loyalty flywheel, Belong is where you belong. Join us in bridging the old world of middlemen to a direct-to-fan future.
 
+![Belong App Screenshot](https://belong-dev-public2.s3.us-east-1.amazonaws.com/admin/images/14d599a6-1590-42ad-88af-1cd9c1c9b298.jpeg)
+
 ## We're Always Looking for Exceptional Talent
 
 At Belong, innovation thrives on diverse, driven individuals who share our vision. We're a mix of Stockholm, and remote team (with a preference for EU/US time zones) that's always open to top talent in engineering, product, design, and beyond. If you have a high sense of ownership, thrive in a fast-paced startup, and want your ideas to directly shape a product impacting millions of music fans, reach out. Even if a role isn't listed, send your resume and a note on why you'd fit to careers[at] belong.app—we review every application thoughtfully.
