@@ -600,8 +600,7 @@ During code review, we'll discuss:
 **5-minute setup with step-by-step instructions**
 
 ### 📖 **Additional Resources:**
-- **[Audio Assets Guide](./assets/audio/README.md)** - Sample tracks and testing info
-- **[Starter Code Templates](./test-app/)** - Ready-to-use project structure and code examples
+- **[Starter Code](./test-app/)** - Ready-to-use project structure and code examples
 - **[Evaluation Rubric](./EVALUATION.md)** - How we'll assess your submission
 
 ### 📂 **Assessment Materials:**
