@@ -416,9 +416,11 @@ src/
     _layout.tsx                # Root layout
 ```
 
+
 ### $${\color{green}6. \space Evaluation \space Criteria}$$
 
-#### $${\color{blue}Architecture \space (40\%)}$$
+
+#### $${\color{blue}Architecture \space (40 percent)}$$
 - ✅ Proper Zustand store implementation with selectors
 - ✅ Custom hooks for business logic separation  
 - ✅ Clean component composition
