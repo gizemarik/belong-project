@@ -436,7 +436,7 @@ src/
 - ✅ Audio controls and progress visualization
 - ✅ Points counter animation
 
-#### $${\color{purple}React \space Native \space Proficiency \space (20\%)}$$
+#### $${\color{purple}React \space Native \space Proficiency \space (20 percent)}$$
 - ✅ Audio playback with react-native-track-player
 - ✅ Proper navigation patterns (Expo Router)
 - ✅ Performance considerations (memoization, selectors)
@@ -444,7 +444,7 @@ src/
 - ✅ Background audio handling
 - ✅ Audio interruption handling
 
-#### $${\color{red}Code \space Quality \space (10\%)}$$
+#### $${\color{red}Code \space Quality \space (10 percent)}$$
 - ✅ TypeScript best practices
 - ✅ Component reusability
 - ✅ Error boundaries and fallbacks
