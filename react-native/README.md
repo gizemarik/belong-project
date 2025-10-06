@@ -541,7 +541,7 @@ MusicRewards/
 ### $${\color{orange}📋 \space Submission \space Requirements}$$
 
 #### $${\color{blue}Deliverables:}$$
-1. **GitHub Repository** with clean commit history
+1. **GitHub Repository** with clean commit history OR **Send ZIP with the project**
 2. **README.md** with setup and run instructions
 3. **ARCHITECTURE.md** explaining design decisions
 4. **Demo Video** (3-4 minutes) showing:
