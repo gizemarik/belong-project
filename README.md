@@ -4,15 +4,15 @@
 
 At Belong, we're not just building an app—we're creating the financial layer of fandom. Imagine a world where your passion for music is rewarded with exclusive perks, seamless financial tools, and direct connections to your favorite artists. That's Belong: a mobile-first platform that merges rewards-driven fan engagement with challenger banking, serving as the ultimate integration and verification layer for the fan economy. Our motto? "Your Love For Music. Rewarded."
 
-We're tackling a fragmented fan economy where artists struggle to identify true supporters, and fans' loyalty goes unrecognized amid bots and scalpers. Through our KYF™ (Know Your Fan) process—backed by mandatory KYC for banking features—we create a trusted, bot-free ecosystem. Fans build dynamic "Fan Personas" from connected data (like Spotify streams and YouTube watches), earn points through challenges, and unlock rewards like priority ticket drops and exclusive merch. Artists gain tools to own their fan data, offer direct perks, and keep more revenue without middlemen.
+We're tackling a fragmented fan economy where artists struggle to identify true supporters, and fans' loyalty goes unrecognized amid bots and scalpers. Artists gain tools to own their fan data, offer direct perks, and keep more revenue without middlemen.
 
-Belong is built on three pillars: Fan Engagement & Rewards (gamified challenges, drops, and tiers), Banking & Financial Services (FDIC-insured accounts, debit cards, P2P transfers via Plaid), and an upcoming Artist & Partner Platform for direct interactions. Our tech stack is cutting-edge: React Native for frontend, Typescript/Fastify/TypeORM for backend on AWS, with integrations like Synctera for banking and Spotify/Google APIs for data.
+Belong is built on three pillars: Fan Engagement & Rewards , Banking & Financial Services , and an Artist & Partner Platform for direct interactions. Our tech stack is cutting-edge: React Native for frontend, Typescript/Fastify/TypeORM for backend on AWS, with integrations like Synctera for banking and Spotify/Google APIs for data.
 
-We're a passionate, music-loving team redefining fandom and fintech. If you're excited about empowering artists as CEOs of their brands and turning fans into a loyalty flywheel, Belong is where you belong. Join us in bridging the old world of middlemen to a direct-to-fan future—inspired by disruptors like Substack for publishing, Patreon for creators, and Shopify for D2C brands.
+We're a passionate, music-loving team redefining fandom and fintech. If you're excited about empowering artists as CEOs of their brands and turning fans into a loyalty flywheel, Belong is where you belong. Join us in bridging the old world of middlemen to a direct-to-fan future.
 
 ## We're Always Looking for Exceptional Talent
 
-At Belong, innovation thrives on diverse, driven individuals who share our vision. We're a fully remote team (with a preference for EU/US time zones) that's always open to top talent in engineering, product, design, and beyond. If you have a high sense of ownership, thrive in a fast-paced startup, and want your ideas to directly shape a product impacting millions of music fans, reach out. Even if a role isn't listed, send your resume and a note on why you'd fit to careers@belong.app—we review every application thoughtfully.
+At Belong, innovation thrives on diverse, driven individuals who share our vision. We're a mix of Stockholm, and remote team (with a preference for EU/US time zones) that's always open to top talent in engineering, product, design, and beyond. If you have a high sense of ownership, thrive in a fast-paced startup, and want your ideas to directly shape a product impacting millions of music fans, reach out. Even if a role isn't listed, send your resume and a note on why you'd fit to careers[at] belong.app—we review every application thoughtfully.
 
 ## About This Repository
 
@@ -20,7 +20,7 @@ This GitHub repo serves as a hub for our careers-related resources. It includes 
 
 ## Current Open Positions
 
-We're growing fast and currently hiring for the following roles. Each position offers impactful work, a dream team environment, and the chance to redefine fandom. All roles are fully remote with flexible hours.
+We're growing fast and currently hiring for the following roles. Each position offers impactful work, a dream team environment, and the chance to redefine fandom. All roles are fully remote or at onsite in Stockholm with flexible hours.
 
 ### React Native Developer
 
@@ -113,15 +113,8 @@ We're looking for a Backend Developer to scale our robust API that powers Belong
 **What We Offer**  
 Fully remote, meaningful impact, and direct influence on Belong's architecture as we grow.
 
-Apply to careers@belong.app with your resume, GitHub, and references to backend tasks in this repo.
+Apply to careers[a-t]belong.app with your resume, GitHub, and references to backend tasks in this repo.
 
-## Thoughtful Suggestions as Your Head of Product
 
-To make this repo even more effective:  
-- Add subfolders like `/react-native-tasks/`, `/frontend-tasks/`, and `/backend-tasks/` with sample challenges (e.g., build a simple fan persona component or API endpoint).  
-- Include a `CONTRIBUTING.md` for application guidelines.  
-- Link to our website (belong.app) or a Notion page for more company info.  
-- Consider adding diversity/inclusion statements to attract a broader talent pool.  
-- If "Backend React Developer" was a typo, we could reframe it as "Full-Stack Developer" or clarify the stack—let me know for revisions!  
 
 We're excited to hear from you—let's build the future of fandom together! 🚀
