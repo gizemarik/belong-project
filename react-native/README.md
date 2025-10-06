@@ -454,7 +454,7 @@ src/
 ### $${\color{blue}7. \space Setup \space Instructions}$$
 
 
-### $${\color{orange}Setup \& Run:}$$
+### $${\color{orange}Setup \ and Run:}$$
 
 ```bash
 # 1. Install dependencies
