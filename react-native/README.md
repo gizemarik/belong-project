@@ -397,7 +397,8 @@ const SAMPLE_CHALLENGES: MusicChallenge[] = [
     completed: false,
     progress: 0,
   },
-];```
+];
+```
 
 ### $${\color{green}5. \space Navigation \space Structure \space with \space Expo \space Router}$$
 
