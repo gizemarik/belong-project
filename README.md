@@ -27,6 +27,8 @@ We're growing fast and currently hiring for the following roles. Each position o
 
 ### $${\color{green}🚀 \space React \space Native \space Developer \space Developer}$$
 
+**[📱 View Technical Assessment →](./react-native/README.md)**
+
 Join our dream team as a React Native Mobile Developer and help build the first Fan-Tech company—creating the financial layer of fandom through our mobile-first Fintech app.
 
 **About the Role**  
