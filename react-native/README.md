@@ -126,7 +126,7 @@ interface UseChallengesReturn {
 
 ### $${\color{red}🎵 \space Audio \space Implementation \space with \space react-native-track-player}$$
 
-### $${\color{purple}Setup \space & \space Configuration:}$$
+### $${\color{purple}Setup \space and \space Configuration:}$$
 
 ```typescript
 // TrackPlayer service setup
