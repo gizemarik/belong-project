@@ -113,7 +113,7 @@ We're looking for a Backend Developer to scale our robust API that powers Belong
 **What We Offer**  
 Fully remote, meaningful impact, and direct influence on Belong's architecture as we grow.
 
-Apply to careers[a-t]belong.app with your resume, GitHub, and references to backend tasks in this repo.
+Apply to careers@belong.app with your resume, GitHub, and references to backend tasks in this repo.
 
 
 
