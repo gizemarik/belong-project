@@ -10,10 +10,10 @@ export const setupTrackPlayer = async (): Promise<void> => {
       return;
     }
 
-    // Setup the player
+    // Setup the player with proper configuration
     await TrackPlayer.setupPlayer({
-      // Configure playback service
       waitForBuffer: true,
+      maxCacheSize: 1024 * 10, // 10MB
     });
 
     // Configure capabilities
