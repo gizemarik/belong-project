@@ -1,13 +1,28 @@
 // Audio service - TrackPlayer setup and configuration
 import TrackPlayer, { Capability, AppKilledPlaybackBehavior } from 'react-native-track-player';
 
+let playerSetup = false;
+
 // TrackPlayer service setup - call this in your App.tsx or _layout.tsx
 export const setupTrackPlayer = async (): Promise<void> => {
   try {
-    // Check if player is already initialized
-    const isSetup = await TrackPlayer.isServiceRunning();
-    if (isSetup) {
-      return;
+    if (playerSetup) return;
+
+    // Best-effort: check if background service is running (platform-dependent)
+    let serviceRunning = false;
+    try {
+      serviceRunning = await TrackPlayer.isServiceRunning();
+    } catch (_) {
+      // ignore
+    }
+
+    // Probe if player is already initialized by calling an API that requires setup
+    try {
+      await TrackPlayer.getQueue();
+      playerSetup = true;
+      return; // Already initialized
+    } catch (_) {
+      // Not initialized, proceed to setup
     }
 
     // Setup the player with proper configuration
@@ -46,7 +61,14 @@ export const setupTrackPlayer = async (): Promise<void> => {
     });
 
     console.log('TrackPlayer setup complete');
+    playerSetup = true;
   } catch (error) {
+    // If already initialized, mark flag and continue
+    const message = (error as any)?.message || '';
+    if (typeof message === 'string' && message.toLowerCase().includes('already been initialized')) {
+      playerSetup = true;
+      return;
+    }
     console.error('TrackPlayer setup error:', error);
     throw error;
   }

@@ -11,6 +11,7 @@ import {
 import { GlassCard, GlassButton } from '../../components/ui/GlassCard';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { THEME } from '../../constants/theme';
+import { usePointerCounter } from '../../hooks/usePointerCounter';
 
 export default function PlayerModal() {
   const { 
@@ -25,6 +26,12 @@ export default function PlayerModal() {
     loading,
     error 
   } = useMusicPlayer();
+
+  const {
+    currentPoints,
+    pointsEarned,
+    progress: pointsProgress,
+  } = usePointerCounter();
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -49,7 +56,12 @@ export default function PlayerModal() {
       pause();
     } else {
       if (currentTrack) {
-        resume();
+        // If nothing is loaded yet (duration 0), start playback for current track
+        if (!duration || duration === 0) {
+          await play(currentTrack);
+        } else {
+          resume();
+        }
       }
     }
   };

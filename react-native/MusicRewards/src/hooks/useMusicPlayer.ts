@@ -10,6 +10,7 @@ import TrackPlayer, {
 import { useMusicStore, selectCurrentTrack, selectIsPlaying } from '../stores/musicStore';
 import { useUserStore } from '../stores/userStore';
 import type { MusicChallenge, UseMusicPlayerReturn } from '../types';
+import { setupTrackPlayer } from '../services/audioService';
 
 export const useMusicPlayer = (): UseMusicPlayerReturn => {
   // TrackPlayer hooks
@@ -74,7 +75,19 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     try {
       setLoading(true);
       setError(null);
-      
+      // Ensure player is ready
+      await setupTrackPlayer();
+
+      // Set selected track immediately so modal shows content
+      setCurrentTrack(track);
+
+      // Quick availability check for the audio URL
+      try {
+        await fetch(track.audioUrl, { method: 'HEAD' });
+      } catch (headErr) {
+        throw new Error('Audio URL is not reachable');
+      }
+
       // Reset and add new track
       await TrackPlayer.reset();
       await TrackPlayer.add({
@@ -87,7 +100,6 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       
       // Start playback
       await TrackPlayer.play();
-      setCurrentTrack(track);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Playback failed';
       setError(errorMessage);
