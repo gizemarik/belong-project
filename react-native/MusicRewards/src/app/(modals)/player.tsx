@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  ActivityIndicator,
   Alert
 } from 'react-native';
 import { GlassCard, GlassButton } from '../../components/ui/GlassCard';
@@ -33,6 +34,9 @@ export default function PlayerModal() {
   const canonicalChallenge = useMusicStore((s) =>
     currentTrack ? s.challenges.find((c) => c.id === currentTrack.id) : undefined
   );
+
+  // Show loading only while the player is preparing (no artificial delay)
+  const showLoading = loading || !duration || duration === 0;
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -81,6 +85,17 @@ export default function PlayerModal() {
             Go back and select a challenge to start playing music
           </Text>
         </GlassCard>
+      </SafeAreaView>
+    );
+  }
+
+  if (showLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={THEME.colors.accent} />
+          <Text style={styles.loadingText}>Preparing player…</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -195,6 +210,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: THEME.spacing.lg,
     justifyContent: 'space-between',
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: THEME.spacing.lg,
+  },
+  loadingText: {
+    marginTop: THEME.spacing.sm,
+    color: THEME.colors.text.secondary,
+    fontSize: THEME.fonts.sizes.md,
   },
   noTrackCard: {
     margin: THEME.spacing.xl,

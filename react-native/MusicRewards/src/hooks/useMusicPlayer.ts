@@ -96,6 +96,24 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       // Set selected track so modal shows correct content
       setCurrentTrack(track);
 
+      // Establish baseline progress for this track in the store right away
+      // so the UI (detail/player) doesn't render previous track's progress.
+      // We'll still perform the actual seek after adding the track below.
+      let savedPct = 0;
+      try {
+        const state = useMusicStore.getState();
+        const saved = state.challenges.find((c) => c.id === track.id);
+        savedPct = saved?.progress ?? 0;
+      } catch {
+        savedPct = 0;
+      }
+      updateProgress(track.id, savedPct);
+      // Update local position state to match intended resume point (for UI labels)
+      const intendedResumeSeconds = savedPct > 0 && track.duration > 0
+        ? Math.min(track.duration * (savedPct / 100), Math.max(track.duration - 1, 0))
+        : 0;
+      setCurrentPosition(intendedResumeSeconds);
+
       // Quick availability check for the audio URL
       try {
         await fetch(track.audioUrl, { method: 'HEAD' });
@@ -112,13 +130,10 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
         duration: track.duration,
       });
 
-      // Try to resume from stored progress for this challenge
+      // Try to resume from stored progress for this challenge (actual player seek)
       try {
-        const state = useMusicStore.getState();
-        const saved = state.challenges.find((c) => c.id === track.id);
-        const pct = saved?.progress ?? 0;
-        if (pct > 0 && track.duration > 0) {
-          const resumeSeconds = Math.min(track.duration * (pct / 100), Math.max(track.duration - 1, 0));
+        if (savedPct > 0 && track.duration > 0) {
+          const resumeSeconds = Math.min(track.duration * (savedPct / 100), Math.max(track.duration - 1, 0));
           await TrackPlayer.seekTo(resumeSeconds);
           setCurrentPosition(resumeSeconds);
         } else {
