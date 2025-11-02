@@ -5,18 +5,25 @@ import { router } from 'expo-router';
 import { ChallengeCard } from '../../components/challenge/ChallengeCard';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { useMusicStore, selectChallenges, selectCurrentTrack, selectIsPlaying } from '../../stores/musicStore';
+import { useUserStore } from '../../stores/userStore';
 import { THEME } from '../../constants/theme';
 import type { MusicChallenge } from '../../types';
+import TrackPlayer from 'react-native-track-player';
+import { GlassButton } from '../../components/ui/GlassCard';
 
 export default function HomeScreen() {
   const challenges = useMusicStore(selectChallenges);
   const currentTrack = useMusicStore(selectCurrentTrack);
   const isPlaying = useMusicStore(selectIsPlaying);
-  const { play } = useMusicPlayer();
+  const { play, resume } = useMusicPlayer();
 
   const handlePlayChallenge = async (challenge: MusicChallenge) => {
     try {
-      await play(challenge);
+      if (currentTrack?.id === challenge.id) {
+        await resume();
+      } else {
+        await play(challenge);
+      }
       // Navigate to player modal after starting playback
       router.push('/(modals)/player');
     } catch (error) {
@@ -30,6 +37,7 @@ export default function HomeScreen() {
       onPlay={handlePlayChallenge}
       isCurrentTrack={currentTrack?.id === item.id}
       isPlaying={isPlaying}
+      onPressCard={(challenge) => router.push({ pathname: '/(modals)/challenge/[id]', params: { id: challenge.id } })}
     />
   );
 
@@ -39,6 +47,21 @@ export default function HomeScreen() {
       <Text style={styles.subtitle}>
         Complete listening challenges to earn points and unlock achievements
       </Text>
+      {/* TEMP: Added for local testing; will be removed before release. TODO: Remove reset button */}
+      <GlassButton
+        title="Reset"
+        onPress={async () => {
+          // Reset user and music stores and TrackPlayer
+          useUserStore.getState().resetProgress();
+          useMusicStore.getState().loadChallenges();
+          useMusicStore.getState().setCurrentTrack(null as any);
+          useMusicStore.getState().setIsPlaying(false);
+          useMusicStore.getState().setCurrentPosition(0);
+          try { await TrackPlayer.reset(); } catch {}
+        }}
+        variant="secondary"
+        style={{ marginBottom: THEME.spacing.md }}
+      />
       <FlatList
         data={challenges}
         renderItem={renderChallenge}

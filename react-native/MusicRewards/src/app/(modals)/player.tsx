@@ -1,9 +1,9 @@
 // Player modal - Full-screen audio player (Expo Router modal)
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
+import {
+  View,
+  Text,
+  StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   Alert
@@ -11,27 +11,28 @@ import {
 import { GlassCard, GlassButton } from '../../components/ui/GlassCard';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { THEME } from '../../constants/theme';
-import { usePointerCounter } from '../../hooks/usePointerCounter';
+import { usePointsCounter } from '../../hooks/usePointsCounter';
+import { useMusicStore } from '../../stores/musicStore';
 
 export default function PlayerModal() {
-  const { 
-    currentTrack, 
-    isPlaying, 
-    currentPosition, 
-    duration, 
-    play, 
-    pause, 
-    resume, 
+  const {
+    currentTrack,
+    isPlaying,
+    currentPosition,
+    duration,
+    play,
+    pause,
+    resume,
     seekTo,
     loading,
-    error 
+    error
   } = useMusicPlayer();
+  const { pointsEarned } = usePointsCounter();
 
-  const {
-    currentPoints,
-    pointsEarned,
-    progress: pointsProgress,
-  } = usePointerCounter();
+  // Read canonical challenge data from the store by id to avoid stale flags
+  const canonicalChallenge = useMusicStore((s) =>
+    currentTrack ? s.challenges.find((c) => c.id === currentTrack.id) : undefined
+  );
 
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -40,6 +41,7 @@ export default function PlayerModal() {
   };
 
   const getProgress = (): number => {
+    if (canonicalChallenge) return canonicalChallenge.progress || 0;
     if (!duration || duration === 0) return 0;
     return (currentPosition / duration) * 100;
   };
@@ -91,19 +93,19 @@ export default function PlayerModal() {
           <Text style={styles.trackTitle}>{currentTrack.title}</Text>
           <Text style={styles.trackArtist}>{currentTrack.artist}</Text>
           <Text style={styles.trackDescription}>{currentTrack.description}</Text>
-          
+
           <View style={styles.pointsContainer}>
             <Text style={styles.pointsLabel}>Challenge Points</Text>
-            <Text style={styles.pointsValue}>{currentTrack.points}</Text>
+            <Text style={styles.pointsValue}>{pointsEarned} / {currentTrack.points}</Text>
           </View>
         </GlassCard>
 
         {/* Progress Section */}
         <GlassCard style={styles.progressCard}>
           <Text style={styles.progressLabel}>Listening Progress</Text>
-          
+
           {/* Progress Bar */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.progressTrack}
             onPress={(event) => {
               const { locationX, width } = event.nativeEvent as any;
@@ -112,11 +114,11 @@ export default function PlayerModal() {
             }}
           >
             <View style={styles.progressBackground}>
-              <View 
+              <View
                 style={[
                   styles.progressFill,
                   { width: `${getProgress()}%` }
-                ]} 
+                ]}
               />
             </View>
           </TouchableOpacity>
@@ -142,7 +144,7 @@ export default function PlayerModal() {
               variant="secondary"
               style={styles.controlButton}
             />
-            
+
             <GlassButton
               title={loading ? "..." : isPlaying ? "⏸️ Pause" : "▶️ Play"}
               onPress={handlePlayPause}
@@ -150,7 +152,7 @@ export default function PlayerModal() {
               style={styles.mainControlButton}
               loading={loading}
             />
-            
+
             <GlassButton
               title="⏩ +10s"
               onPress={() => handleSeek(Math.min(100, getProgress() + (10 / duration) * 100))}
@@ -170,12 +172,12 @@ export default function PlayerModal() {
           <View style={styles.challengeInfo}>
             <Text style={[
               styles.challengeStatus,
-              { color: currentTrack.completed ? THEME.colors.secondary : THEME.colors.accent }
+              { color: canonicalChallenge?.completed ? THEME.colors.secondary : THEME.colors.accent }
             ]}>
-              {currentTrack.completed ? '✅ Completed' : '🎧 In Progress'}
+              {canonicalChallenge?.completed ? '✅ Completed' : '🎧 In Progress'}
             </Text>
             <Text style={styles.challengeProgress}>
-              {Math.round(currentTrack.progress)}% of challenge complete
+              {Math.round(canonicalChallenge?.progress ?? 0)}% of challenge complete
             </Text>
           </View>
         </GlassCard>

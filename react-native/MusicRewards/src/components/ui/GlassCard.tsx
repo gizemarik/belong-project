@@ -20,6 +20,7 @@ interface GlassCardProps {
   borderRadius?: number;
   style?: ViewStyle;
   gradientColors?: readonly string[];
+  contentPadding?: number;
 }
 
 export const GlassCard: React.FC<GlassCardProps> = ({
@@ -28,6 +29,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   borderRadius = THEME.borderRadius.md,
   gradientColors = THEME.glass.gradientColors.card,
   style,
+  contentPadding = THEME.spacing.md,
 }) => {
     return (
       <View style={StyleSheet.flatten([{ borderRadius, overflow: 'hidden' }, style])}>
@@ -35,11 +37,13 @@ export const GlassCard: React.FC<GlassCardProps> = ({
           intensity={blurIntensity} 
           style={StyleSheet.absoluteFillObject}
           tint="dark"
+          pointerEvents="none"
         />
         
         <LinearGradient
           colors={gradientColors as [string, string]}
           style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
         />
         
         <View 
@@ -49,9 +53,10 @@ export const GlassCard: React.FC<GlassCardProps> = ({
             borderWidth: 1,
             borderColor: THEME.colors.border,
           }}
+          pointerEvents="none"
         />
         
-        <View style={styles.contentContainer}>
+        <View style={[styles.contentContainer, { padding: contentPadding }]}>
           {children}
         </View>
       </View>
@@ -83,23 +88,27 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     : THEME.glass.gradientColors.secondary;
 
   return (
-    <GlassCard
-      gradientColors={gradientColors}
-      style={StyleSheet.flatten([styles.button, style])}
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled || loading}
+      activeOpacity={0.7}
+      style={style}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
-      <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
-        style={styles.buttonContent}
-        activeOpacity={0.7}
+      <GlassCard
+        gradientColors={gradientColors}
+        style={styles.button}
+        contentPadding={0}
       >
-        {loading ? (
-          <ActivityIndicator color={THEME.colors.text.primary} size="small" />
-        ) : (
-          <Text style={[styles.buttonText, textStyle]}>{title}</Text>
-        )}
-      </TouchableOpacity>
-    </GlassCard>
+        <View style={styles.buttonContent}>
+          {loading ? (
+            <ActivityIndicator color={THEME.colors.text.primary} size="small" />
+          ) : (
+            <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+          )}
+        </View>
+      </GlassCard>
+    </TouchableOpacity>
   );
 };
 

@@ -1,5 +1,5 @@
 // useMusicPlayer hook - Integrates react-native-track-player with Zustand
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import TrackPlayer, {
   State,
   usePlaybackState,
@@ -32,36 +32,48 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const addPoints = useUserStore((state) => state.addPoints);
   const completeChallenge = useUserStore((state) => state.completeChallenge);
 
-  // Track playback state changes
+  // Track playback state changes (guard against update loops)
+  const prevIsPlayingRef = useRef<boolean | null>(null);
   useEffect(() => {
-    // Some versions of usePlaybackState may return an object, so extract value if needed
     let stateValue: any = playbackState;
     if (typeof playbackState === 'object' && playbackState !== null && 'state' in playbackState) {
-      stateValue = playbackState.state;
+      stateValue = (playbackState as any).state;
     }
     const isCurrentlyPlaying = stateValue === State.Playing;
-    if (isCurrentlyPlaying !== isPlaying) {
-      setIsPlaying(isCurrentlyPlaying);
-    }
-  }, [playbackState, isPlaying, setIsPlaying]);
+    if (prevIsPlayingRef.current === isCurrentlyPlaying) return;
+    prevIsPlayingRef.current = isCurrentlyPlaying;
+    setIsPlaying(isCurrentlyPlaying);
+  }, [playbackState, setIsPlaying]);
 
-  // Update position and calculate progress/points
+  // Update position and calculate progress/points (avoid loops by keying on id and throttling writes)
+  const currentTrackId = currentTrack?.id;
+  const lastUpdateRef = useRef<{ id?: string; percent?: number }>({});
   useEffect(() => {
-    if (currentTrack && progress.position > 0) {
-      setCurrentPosition(progress.position);
-      
-      // Calculate progress percentage
-      const progressPercentage = (progress.position / progress.duration) * 100;
-      updateProgress(currentTrack.id, progressPercentage);
-      
-      // Check if track is completed (90% threshold to account for small timing issues)
-      if (progressPercentage >= 90 && !currentTrack.completed) {
-        markChallengeComplete(currentTrack.id);
-        completeChallenge(currentTrack.id);
-        addPoints(currentTrack.points);
-      }
+    if (!currentTrackId) return;
+    if (!progress.duration || progress.duration <= 0) return;
+
+    const percent = (progress.position / progress.duration) * 100;
+    // Reduce churn to 0.1% steps
+    const rounded = Math.floor(percent * 10) / 10;
+
+    if (
+      lastUpdateRef.current.id === currentTrackId &&
+      lastUpdateRef.current.percent === rounded
+    ) {
+      return;
     }
-  }, [progress.position, progress.duration, currentTrack, setCurrentPosition, updateProgress, markChallengeComplete, completeChallenge, addPoints]);
+
+    setCurrentPosition(progress.position);
+    updateProgress(currentTrackId, percent);
+    lastUpdateRef.current = { id: currentTrackId, percent: rounded };
+
+    // Completion check (90% threshold)
+    if (percent >= 90 && currentTrack && !currentTrack.completed) {
+      markChallengeComplete(currentTrackId);
+      completeChallenge(currentTrackId);
+      addPoints(currentTrack.points);
+    }
+  }, [progress.position, progress.duration, currentTrackId, setCurrentPosition, updateProgress, markChallengeComplete, completeChallenge, addPoints, currentTrack]);
 
   // Handle track player events
   useTrackPlayerEvents([Event.PlaybackError], (event) => {
@@ -78,7 +90,10 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       // Ensure player is ready
       await setupTrackPlayer();
 
-      // Set selected track immediately so modal shows content
+      // Immediately stop any previous playback to avoid stale progress
+      await TrackPlayer.reset();
+
+      // Set selected track so modal shows correct content
       setCurrentTrack(track);
 
       // Quick availability check for the audio URL
@@ -88,8 +103,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
         throw new Error('Audio URL is not reachable');
       }
 
-      // Reset and add new track
-      await TrackPlayer.reset();
+      // Add new track
       await TrackPlayer.add({
         id: track.id,
         url: track.audioUrl,
@@ -97,6 +111,23 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
         artist: track.artist,
         duration: track.duration,
       });
+
+      // Try to resume from stored progress for this challenge
+      try {
+        const state = useMusicStore.getState();
+        const saved = state.challenges.find((c) => c.id === track.id);
+        const pct = saved?.progress ?? 0;
+        if (pct > 0 && track.duration > 0) {
+          const resumeSeconds = Math.min(track.duration * (pct / 100), Math.max(track.duration - 1, 0));
+          await TrackPlayer.seekTo(resumeSeconds);
+          setCurrentPosition(resumeSeconds);
+        } else {
+          setCurrentPosition(0);
+        }
+      } catch {
+        // fall back to start
+        setCurrentPosition(0);
+      }
       
       // Start playback
       await TrackPlayer.play();
@@ -108,6 +139,14 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       setLoading(false);
     }
   }, [setCurrentTrack]);
+
+  // When switching tracks, reset local position to 0 so UI doesn't show previous track progress
+  useEffect(() => {
+    if (currentTrack) {
+      setCurrentPosition(0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack?.id]);
 
   const pause = useCallback(async () => {
     try {

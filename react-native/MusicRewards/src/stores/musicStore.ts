@@ -40,27 +40,43 @@ export const useMusicStore = create<MusicStore>()(
       },
 
       updateProgress: (challengeId: string, progress: number) => {
-        set((state) => ({
-          challenges: state.challenges.map((challenge) =>
-            challenge.id === challengeId
-              ? { ...challenge, progress: Math.min(progress, 100) }
-              : challenge
-          ),
-        }));
+        set((state) => {
+          const clamped = Math.min(progress, 100);
+          return {
+            challenges: state.challenges.map((challenge) =>
+              challenge.id === challengeId
+                ? { ...challenge, progress: clamped }
+                : challenge
+            ),
+            currentTrack:
+              state.currentTrack && state.currentTrack.id === challengeId
+                ? { ...state.currentTrack, progress: clamped }
+                : state.currentTrack,
+          };
+        });
       },
 
       markChallengeComplete: (challengeId: string) => {
         set((state) => ({
           challenges: state.challenges.map((challenge) =>
             challenge.id === challengeId
-              ? { 
-                  ...challenge, 
-                  completed: true, 
+              ? {
+                  ...challenge,
+                  completed: true,
                   progress: 100,
-                  completedAt: new Date().toISOString()
+                  completedAt: new Date().toISOString(),
                 }
               : challenge
           ),
+          currentTrack:
+            state.currentTrack && state.currentTrack.id === challengeId
+              ? {
+                  ...state.currentTrack,
+                  completed: true,
+                  progress: 100,
+                  completedAt: new Date().toISOString(),
+                }
+              : state.currentTrack,
         }));
       },
 

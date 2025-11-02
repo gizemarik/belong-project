@@ -1,9 +1,8 @@
-// usePointerCounter - Computes live points based on challenge progress from the store
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMusicStore, selectCurrentTrack } from '../stores/musicStore';
 import type { PointsCounterConfig, UsePointsCounterReturn } from '../types';
 
-export function usePointerCounter(): UsePointsCounterReturn {
+export function usePointsCounter(): UsePointsCounterReturn {
   const currentTrack = useMusicStore(selectCurrentTrack);
   const challenges = useMusicStore((s) => s.challenges);
 

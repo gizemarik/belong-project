@@ -10,6 +10,7 @@ interface ChallengeCardProps {
   onPlay: (challenge: MusicChallenge) => void;
   isCurrentTrack?: boolean;
   isPlaying?: boolean;
+  onPressCard?: (challenge: MusicChallenge) => void;
 }
 
 export const ChallengeCard: React.FC<ChallengeCardProps> = ({
@@ -17,6 +18,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   onPlay,
   isCurrentTrack = false,
   isPlaying = false,
+  onPressCard,
 }) => {
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -41,17 +43,21 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   };
 
   return (
-    <GlassCard
-      style={StyleSheet.flatten([
-        styles.card,
-        isCurrentTrack && styles.currentTrackCard
-      ])}
-      gradientColors={
-        isCurrentTrack
-          ? THEME.glass.gradientColors.primary
-          : THEME.glass.gradientColors.card
-      }
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => onPressCard && onPressCard(challenge)}
     >
+      <GlassCard
+        style={StyleSheet.flatten([
+          styles.card,
+          isCurrentTrack && styles.currentTrackCard
+        ])}
+        gradientColors={
+          isCurrentTrack
+            ? THEME.glass.gradientColors.primary
+            : THEME.glass.gradientColors.card
+        }
+      >
       <View style={styles.header}>
         <View style={styles.titleSection}>
           <Text style={styles.title}>{challenge.title}</Text>
@@ -108,7 +114,8 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
         disabled={challenge.completed}
         style={styles.playButton}
       />
-    </GlassCard>
+      </GlassCard>
+    </TouchableOpacity>
   );
 };
 
