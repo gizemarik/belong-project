@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { THEME } from '../../constants/theme';
 import { GlassCard } from './GlassCard';
+import { haptics } from '../../utils/haptics';
 
 interface GlassButtonProps {
   title: string;
@@ -41,7 +42,10 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => {
+        haptics.selection();
+        onPress();
+      }}
       disabled={disabled || loading}
       activeOpacity={0.7}
       style={style}
@@ -78,7 +82,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: THEME.colors.text.primary,
-    fontSize: THEME.fonts.sizes.md,
+    fontSize: 16,
     fontWeight: '600',
   },
 });

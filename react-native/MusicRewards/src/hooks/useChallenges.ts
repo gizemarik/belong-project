@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useToast } from './useToast';
 import { useMusicStore } from '../stores/musicStore';
 import { useUserStore } from '../stores/userStore';
 import type { UseChallengesReturn } from '../types';
@@ -13,6 +14,7 @@ export function useChallenges(): UseChallengesReturn {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   const refreshChallenges = useCallback(async () => {
     try {
@@ -21,6 +23,7 @@ export function useChallenges(): UseChallengesReturn {
       await Promise.resolve(loadChallenges());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to refresh challenges');
+      toast.error('Failed to refresh challenges');
     } finally {
       setLoading(false);
     }
@@ -39,6 +42,7 @@ export function useChallenges(): UseChallengesReturn {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to complete challenge');
+      toast.error('Failed to complete challenge');
     } finally {
       setLoading(false);
     }

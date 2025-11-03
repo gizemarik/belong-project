@@ -11,6 +11,7 @@ interface MusicStore {
   currentTrack: MusicChallenge | null;
   isPlaying: boolean;
   currentPosition: number;
+  rehydrated: boolean;
   
   // Actions
   loadChallenges: () => void;
@@ -18,9 +19,12 @@ interface MusicStore {
   clearCurrentTrack: () => void;
   updateProgress: (challengeId: string, progress: number) => void;
   markChallengeComplete: (challengeId: string) => void;
+  revertChallengeStatus: (challengeId: string, prev: { completed: boolean; progress: number; completedAt?: string }) => void;
   setIsPlaying: (playing: boolean) => void;
   setCurrentPosition: (position: number) => void;
 }
+
+let markMusicHydrated: (() => void) | null = null;
 
 export const useMusicStore = create<MusicStore>()(
   persist(
@@ -30,6 +34,7 @@ export const useMusicStore = create<MusicStore>()(
       currentTrack: null,
       isPlaying: false,
       currentPosition: 0,
+      rehydrated: false,
 
       // Actions
       loadChallenges: () => {
@@ -85,6 +90,30 @@ export const useMusicStore = create<MusicStore>()(
         }));
       },
 
+      revertChallengeStatus: (challengeId: string, prev: { completed: boolean; progress: number; completedAt?: string }) => {
+        set((state) => ({
+          challenges: state.challenges.map((challenge) =>
+            challenge.id === challengeId
+              ? {
+                  ...challenge,
+                  completed: prev.completed,
+                  progress: prev.progress,
+                  completedAt: prev.completedAt,
+                }
+              : challenge
+          ),
+          currentTrack:
+            state.currentTrack && state.currentTrack.id === challengeId
+              ? {
+                  ...state.currentTrack,
+                  completed: prev.completed,
+                  progress: prev.progress,
+                  completedAt: prev.completedAt,
+                }
+              : state.currentTrack,
+        }));
+      },
+
       setIsPlaying: (playing: boolean) => {
         set({ isPlaying: playing });
       },
@@ -96,15 +125,47 @@ export const useMusicStore = create<MusicStore>()(
     {
       name: 'music-store',
       storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      migrate: (persisted: any, fromVersion: number) => {
+        const base = persisted ?? {};
+        const challenges = Array.isArray(base.challenges) ? base.challenges : [];
+        const normalized = challenges.map((c: any) => {
+          const progressNum = typeof c?.progress === 'number' ? c.progress : 0;
+          return {
+            id: String(c?.id ?? ''),
+            title: String(c?.title ?? ''),
+            artist: String(c?.artist ?? ''),
+            duration: typeof c?.duration === 'number' ? c.duration : 0,
+            points: typeof c?.points === 'number' ? c.points : 0,
+            audioUrl: String(c?.audioUrl ?? ''),
+            imageUrl: c?.imageUrl ? String(c.imageUrl) : undefined,
+            description: String(c?.description ?? ''),
+            difficulty: (c?.difficulty === 'easy' || c?.difficulty === 'medium' || c?.difficulty === 'hard') ? c.difficulty : 'easy',
+            completed: Boolean(c?.completed),
+            progress: Math.max(0, Math.min(100, progressNum)),
+            completedAt: c?.completedAt ? String(c.completedAt) : undefined,
+          };
+        });
+        return { challenges: normalized };
+      },
       // Only persist challenges, not playback state
       partialize: (state) => ({
         challenges: state.challenges,
       }),
+      onRehydrateStorage: () => () => {
+        if (markMusicHydrated) markMusicHydrated();
+      },
     }
   )
 );
+
+// set rehydrated after store is created
+markMusicHydrated = () => {
+  try { useMusicStore.setState({ rehydrated: true }); } catch {}
+};
 
 // Selector functions for performance
 export const selectCurrentTrack = (state: MusicStore) => state.currentTrack;
 export const selectIsPlaying = (state: MusicStore) => state.isPlaying;
 export const selectChallenges = (state: MusicStore) => state.challenges;
+export const selectMusicRehydrated = (state: MusicStore) => state.rehydrated;

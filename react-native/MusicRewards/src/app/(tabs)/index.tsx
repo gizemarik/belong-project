@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { router } from 'expo-router';
-import { ChallengeCard } from '../../components/challenge/ChallengeCard';
+import { ChallengeList } from '../../components/challenge/ChallengeList';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { useMusicStore, selectChallenges, selectCurrentTrack, selectIsPlaying } from '../../stores/musicStore';
 import { useUserStore } from '../../stores/userStore';
@@ -10,12 +10,14 @@ import { THEME } from '../../constants/theme';
 import type { MusicChallenge } from '../../types';
 import TrackPlayer from 'react-native-track-player';
 import { GlassButton } from '../../components/ui/GlassButton';
+import { useToast } from '../../hooks/useToast';
 
 export default function HomeScreen() {
   const challenges = useMusicStore(selectChallenges);
   const currentTrack = useMusicStore(selectCurrentTrack);
   const isPlaying = useMusicStore(selectIsPlaying);
   const { play, resume } = useMusicPlayer();
+  const toast = useToast();
 
   const handlePlayChallenge = async (challenge: MusicChallenge) => {
     try {
@@ -28,18 +30,9 @@ export default function HomeScreen() {
       router.push('/(modals)/player');
     } catch (error) {
       console.error('Failed to play challenge:', error);
+      toast.error('Failed to start playback');
     }
   };
-
-  const renderChallenge = ({ item }: { item: MusicChallenge }) => (
-    <ChallengeCard
-      challenge={item}
-      onPlay={handlePlayChallenge}
-      isCurrentTrack={currentTrack?.id === item.id}
-      isPlaying={isPlaying}
-      onPressCard={(challenge) => router.push({ pathname: '/(modals)/challenge/[id]', params: { id: challenge.id } })}
-    />
-  );
 
   return (
     <View style={styles.container}>
@@ -58,16 +51,15 @@ export default function HomeScreen() {
           useMusicStore.getState().setIsPlaying(false);
           useMusicStore.getState().setCurrentPosition(0);
           try { await TrackPlayer.reset(); } catch {}
+          toast.info('Challenge statuses have been reset.');
         }}
         variant="secondary"
         style={{ marginBottom: THEME.spacing.md }}
       />
-      <FlatList
-        data={challenges}
-        renderItem={renderChallenge}
-        keyExtractor={(item) => item.id}
+      <ChallengeList
+        onPlay={handlePlayChallenge}
+        onPressCard={(challenge) => router.push({ pathname: '/(modals)/challenge/[id]', params: { id: challenge.id } })}
         contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
       />
     </View>
   );

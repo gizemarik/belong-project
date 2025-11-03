@@ -18,6 +18,8 @@ export default function ProfileScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Your Progress</Text>
 
+      {/* Removed success toast demo trigger */}
+
       {/* Stats Overview */}
       <GlassCard style={styles.statsCard}>
         <View style={styles.statsGrid}>

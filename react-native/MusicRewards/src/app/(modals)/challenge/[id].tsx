@@ -1,6 +1,8 @@
 // Challenge Detail (modal)
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import ConfettiCannon from 'react-native-confetti-cannon';
 import { useLocalSearchParams, router } from 'expo-router';
 import { GlassCard } from '../../../components/ui/GlassCard';
 import { GlassButton } from '../../../components/ui/GlassButton';
@@ -22,6 +24,22 @@ export default function ChallengeDetailModal() {
   const addPoints = useUserStore((s) => s.addPoints);
   const completeChallenge = useUserStore((s) => s.completeChallenge);
 
+  // Swipe-to-close (downward) gesture (MUST be before any conditional returns)
+  const panTransY = React.useRef(0);
+  const panVelY = React.useRef(0);
+  const onGestureEvent = (e: any) => {
+    panTransY.current = e.nativeEvent.translationY || 0;
+    panVelY.current = e.nativeEvent.velocityY || 0;
+  };
+  const onHandlerStateChange = (e: any) => {
+    if (e.nativeEvent.state === State.END) {
+      if (panTransY.current > 60 || panVelY.current > 800) {
+        router.back();
+      }
+      panTransY.current = 0; panVelY.current = 0;
+    }
+  };
+
   const formattedDuration = useMemo(() => {
     if (!challenge) return '0:00';
     const minutes = Math.floor(challenge.duration / 60);
@@ -37,12 +55,14 @@ export default function ChallengeDetailModal() {
 
   if (!challenge) {
     return (
+      <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
       <ScrollView style={styles.container} contentContainerStyle={styles.centered}>
         <GlassCard style={styles.centerCard}>
           <Text style={styles.title}>Challenge not found</Text>
           <GlassButton title="Close" onPress={() => router.back()} variant="secondary" />
         </GlassCard>
       </ScrollView>
+      </PanGestureHandler>
     );
   }
 
@@ -53,11 +73,12 @@ export default function ChallengeDetailModal() {
       completeChallenge(challenge.id);
       addPoints(challenge.points);
     }
-    Alert.alert('Completed', 'Challenge marked as completed.');
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
+    <View style={styles.wrapper}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
 
       <GlassCard style={styles.card}>
         <Text style={styles.title}>{challenge.title}</Text>
@@ -91,6 +112,7 @@ export default function ChallengeDetailModal() {
 
       <GlassCard style={styles.card}>
         <View style={styles.actions}>
+          {/* Confetti moved to full-screen overlay */}
           <GlassButton title="Open Player" onPress={async () => {
             if (!challenge) return;
             if (!currentTrack || currentTrack.id !== challenge.id) {
@@ -106,11 +128,31 @@ export default function ChallengeDetailModal() {
           />
         </View>
       </GlassCard>
-    </ScrollView>
+      </ScrollView>
+      {/* Full-screen confetti overlay */}
+      {challenge.completed && (
+        <View pointerEvents="none" style={styles.confettiOverlayRoot}>
+          <ConfettiCannon
+            key={`confetti-${challenge.id}`}
+            count={180}
+            origin={{ x: Dimensions.get('window').width / 2, y: 0 }}
+            autoStart
+            fadeOut={false}
+            explosionSpeed={200}
+            fallSpeed={2000}
+          />
+        </View>
+      )}
+    </View>
+    </PanGestureHandler>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   container: {
     flex: 1,
     backgroundColor: THEME.colors.background,
@@ -185,6 +227,15 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: THEME.spacing.sm,
+  },
+  confettiOverlayRoot: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 99999,
+    elevation: 99999,
   },
 });
 

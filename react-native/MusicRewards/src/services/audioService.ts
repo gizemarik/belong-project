@@ -1,5 +1,6 @@
 // Audio service - TrackPlayer setup and configuration
 import TrackPlayer, { Capability, AppKilledPlaybackBehavior } from 'react-native-track-player';
+import { useToastStore } from '../stores/toastStore';
 
 let playerSetup = false;
 
@@ -37,8 +38,6 @@ export const setupTrackPlayer = async (): Promise<void> => {
       capabilities: [
         Capability.Play,
         Capability.Pause,
-        Capability.SkipToNext,
-        Capability.SkipToPrevious,
         Capability.SeekTo,
       ],
 
@@ -50,7 +49,7 @@ export const setupTrackPlayer = async (): Promise<void> => {
 
       // Configure behavior when app is killed
       android: {
-        appKilledPlaybackBehavior: AppKilledPlaybackBehavior.StopPlaybackAndRemoveNotification,
+        appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback,
       },
 
       // Configure notification
@@ -72,6 +71,7 @@ export const setupTrackPlayer = async (): Promise<void> => {
       return;
     }
     console.error('TrackPlayer setup error:', error);
+    try { useToastStore.getState().show('Audio setup failed', { variant: 'error' }); } catch {}
     throw error;
   }
 };
@@ -82,6 +82,7 @@ export const resetPlayer = async (): Promise<void> => {
     await TrackPlayer.reset();
   } catch (error) {
     console.error('Reset player error:', error);
+    try { useToastStore.getState().show('Reset player failed', { variant: 'error' }); } catch {}
   }
 };
 
@@ -105,6 +106,7 @@ export const addTrack = async (track: {
     });
   } catch (error) {
     console.error('Add track error:', error);
+    try { useToastStore.getState().show('Add track failed', { variant: 'error' }); } catch {}
     throw error;
   }
 };
@@ -115,6 +117,7 @@ export const playTrack = async (): Promise<void> => {
     await TrackPlayer.play();
   } catch (error) {
     console.error('Play track error:', error);
+    try { useToastStore.getState().show('Play failed', { variant: 'error' }); } catch {}
     throw error;
   }
 };
@@ -125,6 +128,7 @@ export const pauseTrack = async (): Promise<void> => {
     await TrackPlayer.pause();
   } catch (error) {
     console.error('Pause track error:', error);
+    try { useToastStore.getState().show('Pause failed', { variant: 'error' }); } catch {}
     throw error;
   }
 };
@@ -135,6 +139,7 @@ export const seekToPosition = async (seconds: number): Promise<void> => {
     await TrackPlayer.seekTo(seconds);
   } catch (error) {
     console.error('Seek error:', error);
+    try { useToastStore.getState().show('Seek failed', { variant: 'error' }); } catch {}
     throw error;
   }
 };
@@ -145,6 +150,7 @@ export const getCurrentPosition = async (): Promise<number> => {
     return await TrackPlayer.getPosition();
   } catch (error) {
     console.error('Get position error:', error);
+    try { useToastStore.getState().show('Get position failed', { variant: 'error' }); } catch {}
     return 0;
   }
 };
@@ -155,6 +161,7 @@ export const getTrackDuration = async (): Promise<number> => {
     return await TrackPlayer.getDuration();
   } catch (error) {
     console.error('Get duration error:', error);
+    try { useToastStore.getState().show('Get duration failed', { variant: 'error' }); } catch {}
     return 0;
   }
 };
@@ -162,6 +169,7 @@ export const getTrackDuration = async (): Promise<number> => {
 // Handle playback errors
 export const handlePlaybackError = (error: unknown) => {
   console.error('Playback error:', error);
+  try { useToastStore.getState().show('Playback error', { variant: 'error' }); } catch {}
   
   // You can add error reporting here
   // Example: report to crash analytics

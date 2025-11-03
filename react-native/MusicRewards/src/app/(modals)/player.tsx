@@ -1,5 +1,5 @@
 // Player modal - Full-screen audio player (Expo Router modal)
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,11 @@ import { GlassButton } from '../../components/ui/GlassButton';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { THEME } from '../../constants/theme';
 import { PointsCounter } from '../../components/ui/PointsCounter';
+import { SpeedControls } from '../../components/ui/SpeedControls';
+import ConfettiCannon from 'react-native-confetti-cannon';
+import { Dimensions } from 'react-native';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import { router } from 'expo-router';
 import { useMusicStore } from '../../stores/musicStore';
 
 export default function PlayerModal() {
@@ -26,15 +31,42 @@ export default function PlayerModal() {
     pause,
     resume,
     seekTo,
+    rate,
+    setRate,
     loading,
     error
   } = useMusicPlayer();
   const [progressWidth, setProgressWidth] = useState(1);
-
+  const confettiRef = useRef<any>(null);
   // Read canonical challenge data from the store by id to avoid stale flags
   const canonicalChallenge = useMusicStore((s) =>
     currentTrack ? s.challenges.find((c) => c.id === currentTrack.id) : undefined
   );
+  // Fire confetti when challenge transitions to completed
+  const prevCompletedRef = useRef<boolean>(false);
+  useEffect(() => {
+    const done = !!canonicalChallenge?.completed;
+    if (done && !prevCompletedRef.current) {
+      try { confettiRef.current?.start?.(); } catch {}
+    }
+    prevCompletedRef.current = done;
+  }, [canonicalChallenge?.completed]);
+
+  // Swipe-to-close (downward) gesture (MUST be before any conditional returns)
+  const panTransY = useRef(0);
+  const panVelY = useRef(0);
+  const onGestureEvent = (e: any) => {
+    panTransY.current = e.nativeEvent.translationY || 0;
+    panVelY.current = e.nativeEvent.velocityY || 0;
+  };
+  const onHandlerStateChange = (e: any) => {
+    if (e.nativeEvent.state === State.END) {
+      if (panTransY.current > 60 || panVelY.current > 800) {
+        router.back();
+      }
+      panTransY.current = 0; panVelY.current = 0;
+    }
+  };
 
   // Show loading only while the player is preparing (no artificial delay)
   const showLoading = loading || !duration || duration === 0;
@@ -102,6 +134,7 @@ export default function PlayerModal() {
   }
 
   return (
+    <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         {/* Track Info */}
@@ -116,6 +149,7 @@ export default function PlayerModal() {
         {/* Progress Section */}
         <GlassCard style={styles.progressCard}>
           <Text style={styles.progressLabel}>Listening Progress</Text>
+
 
           {/* Progress Bar */}
           <TouchableOpacity
@@ -180,6 +214,8 @@ export default function PlayerModal() {
           )}
         </GlassCard>
 
+        <SpeedControls rate={rate} setRate={setRate} />
+
         {/* Challenge Progress */}
         <GlassCard style={styles.challengeCard}>
           <Text style={styles.challengeLabel}>Challenge Status</Text>
@@ -196,7 +232,20 @@ export default function PlayerModal() {
           </View>
         </GlassCard>
       </View>
+      {/* Full-screen confetti overlay to match Challenge Detail */}
+      <View pointerEvents="none" style={styles.confettiOverlayRoot}>
+        <ConfettiCannon
+          count={180}
+          origin={{ x: Dimensions.get('window').width / 2, y: 0 }}
+          autoStart={false}
+          fadeOut={false}
+          ref={confettiRef}
+          explosionSpeed={200}
+          fallSpeed={2000}
+        />
+      </View>
     </SafeAreaView>
+    </PanGestureHandler>
   );
 }
 
@@ -204,11 +253,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: THEME.colors.background,
+    position: 'relative',
   },
   content: {
     flex: 1,
     padding: THEME.spacing.lg,
     justifyContent: 'space-between',
+  },
+  confettiOverlay: undefined as any,
+  confettiOverlayRoot: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 99999,
+    elevation: 99999,
   },
   loadingContainer: {
     flex: 1,

@@ -11,8 +11,10 @@ import { useMusicStore, selectCurrentTrack, selectIsPlaying } from '../stores/mu
 import { useUserStore } from '../stores/userStore';
 import type { MusicChallenge, UseMusicPlayerReturn } from '../types';
 import { setupTrackPlayer } from '../services/audioService';
+import { useToast } from './useToast';
 
-export const useMusicPlayer = (): UseMusicPlayerReturn => {
+export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate: (rate: number) => void } => {
+  const toast = useToast();
   // TrackPlayer hooks
   const playbackState = usePlaybackState();
   const progress = useProgress();
@@ -20,6 +22,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   // Local state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rate, setRateState] = useState(1);
   
   // Zustand store selectors
   const currentTrack = useMusicStore(selectCurrentTrack);
@@ -84,6 +87,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     if (event.type === Event.PlaybackError) {
       setError(`Playback error: ${event.message}`);
       setLoading(false);
+      toast.error('Playback error');
     } else if (event.type === Event.PlaybackQueueEnded) {
       // Ensure finalization at track end
       const id = currentTrack?.id;
@@ -95,6 +99,15 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       }
     }
   });
+
+  const setRate = useCallback((newRate: number) => {
+    setRateState(newRate);
+    TrackPlayer.setRate(newRate).catch((err) => {
+      console.error('Set rate error:', err);
+      toast.error('Failed to change rate');
+    });
+  }, []);
+
 
   const play = useCallback(async (track: MusicChallenge) => {
     try {
@@ -159,14 +172,18 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
       
       // Start playback
       await TrackPlayer.play();
+      // Apply current rate after starting (in case player reset changed it)
+      try { await TrackPlayer.setRate(rate); } catch {}
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Playback failed';
       setError(errorMessage);
       console.error('TrackPlayer error:', err);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [setCurrentTrack]);
+  }, [setCurrentTrack, rate]);
+
 
   // When switching tracks, reset local position to 0 so UI doesn't show previous track progress
   useEffect(() => {
@@ -179,18 +196,21 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   const pause = useCallback(() => {
     TrackPlayer.pause().catch((err) => {
       console.error('Pause error:', err);
+      toast.error('Pause failed');
     });
   }, []);
 
   const seekTo = useCallback((seconds: number) => {
     TrackPlayer.seekTo(seconds).catch((err) => {
       console.error('Seek error:', err);
+      toast.error('Seek failed');
     });
   }, []);
 
   const resume = useCallback(() => {
     TrackPlayer.play().catch((err) => {
       console.error('Resume error:', err);
+      toast.error('Resume failed');
     });
   }, []);
 
@@ -205,7 +225,10 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     pause,
     seekTo,
     resume,
+    // extras
+    rate,
+    setRate,
     loading,
     error,
-  };
+  } as UseMusicPlayerReturn & { rate: number; setRate: (rate: number) => void };
 };
