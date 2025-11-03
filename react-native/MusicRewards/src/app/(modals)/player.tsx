@@ -13,8 +13,10 @@ import { GlassCard } from '../../components/ui/GlassCard';
 import { GlassButton } from '../../components/ui/GlassButton';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 import { PointsCounter } from '../../components/ui/PointsCounter';
 import { SpeedControls } from '../../components/ui/SpeedControls';
+  import AudioVisualizer from '../../components/ui/AudioVisualizer';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Dimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
@@ -22,6 +24,7 @@ import { router } from 'expo-router';
 import { useMusicStore } from '../../stores/musicStore';
 
 export default function PlayerModal() {
+  const { theme, mode } = useAppTheme();
   const {
     currentTrack,
     isPlaying,
@@ -111,10 +114,10 @@ export default function PlayerModal() {
 
   if (!currentTrack) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <GlassCard style={styles.noTrackCard}>
-          <Text style={styles.noTrackText}>No track selected</Text>
-          <Text style={styles.noTrackSubtext}>
+          <Text style={[styles.noTrackText, { color: theme.colors.text.primary }]}>No track selected</Text>
+          <Text style={[styles.noTrackSubtext, { color: theme.colors.text.secondary }]}>
             Go back and select a challenge to start playing music
           </Text>
         </GlassCard>
@@ -124,10 +127,10 @@ export default function PlayerModal() {
 
   if (showLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={THEME.colors.accent} />
-          <Text style={styles.loadingText}>Preparing player…</Text>
+          <ActivityIndicator size="large" color={theme.colors.accent} />
+          <Text style={[styles.loadingText, { color: theme.colors.text.secondary }]}>Preparing player…</Text>
         </View>
       </SafeAreaView>
     );
@@ -135,20 +138,35 @@ export default function PlayerModal() {
 
   return (
     <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.content}>
         {/* Track Info */}
         <GlassCard style={styles.trackInfoCard}>
-          <Text style={styles.trackTitle}>{currentTrack.title}</Text>
-          <Text style={styles.trackArtist}>{currentTrack.artist}</Text>
-          <Text style={styles.trackDescription}>{currentTrack.description}</Text>
+          <Text style={[styles.trackTitle, { color: theme.colors.text.primary }]}>{currentTrack.title}</Text>
+          <Text style={[styles.trackArtist, { color: theme.colors.text.secondary }]}>{currentTrack.artist}</Text>
+          <Text style={[styles.trackDescription, { color: theme.colors.text.tertiary }]}>{currentTrack.description}</Text>
 
           <PointsCounter />
+
+          {/* JS-only animated visualizer */}
+          <View style={styles.visualizerContainer}>
+            <AudioVisualizer
+              isPlaying={isPlaying}
+              rate={rate}
+              height={64}
+              barCount={40}
+              seed={currentTrack.id}
+              backgroundColor={mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}
+              barColor={theme.colors.accent}
+              gap={4}
+              rounded
+            />
+          </View>
         </GlassCard>
 
         {/* Progress Section */}
         <GlassCard style={styles.progressCard}>
-          <Text style={styles.progressLabel}>Listening Progress</Text>
+          <Text style={[styles.progressLabel, { color: theme.colors.text.primary }]}>Listening Progress</Text>
 
 
           {/* Progress Bar */}
@@ -173,12 +191,12 @@ export default function PlayerModal() {
 
           {/* Time Display */}
           <View style={styles.timeContainer}>
-            <Text style={styles.timeText}>{formatTime(currentPosition)}</Text>
-            <Text style={styles.timeText}>{formatTime(duration)}</Text>
+            <Text style={[styles.timeText, { color: theme.colors.text.secondary }]}>{formatTime(currentPosition)}</Text>
+            <Text style={[styles.timeText, { color: theme.colors.text.secondary }]}>{formatTime(duration)}</Text>
           </View>
 
           {/* Progress Percentage */}
-          <Text style={styles.progressPercentage}>
+          <Text style={[styles.progressPercentage, { color: theme.colors.accent }]}>
             {Math.round(getProgress())}% Complete
           </Text>
         </GlassCard>
@@ -222,11 +240,11 @@ export default function PlayerModal() {
           <View style={styles.challengeInfo}>
             <Text style={[
               styles.challengeStatus,
-              { color: canonicalChallenge?.completed ? THEME.colors.secondary : THEME.colors.accent }
+              { color: canonicalChallenge?.completed ? theme.colors.secondary : theme.colors.accent }
             ]}>
               {canonicalChallenge?.completed ? '✅ Completed' : '🎧 In Progress'}
             </Text>
-            <Text style={styles.challengeProgress}>
+            <Text style={[styles.challengeProgress, { color: theme.colors.text.secondary }]}>
               {Math.round(canonicalChallenge?.progress ?? 0)}% of challenge complete
             </Text>
           </View>
@@ -316,6 +334,10 @@ const styles = StyleSheet.create({
     color: THEME.colors.text.tertiary,
     textAlign: 'center',
     marginBottom: THEME.spacing.lg,
+  },
+  visualizerContainer: {
+    marginTop: THEME.spacing.sm,
+    width: '100%',
   },
   pointsContainer: {
     alignItems: 'center',

@@ -8,6 +8,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 // Glass Card Component
 interface GlassCardProps {
@@ -23,10 +24,12 @@ export const GlassCard: React.FC<GlassCardProps> = ({
   children,
   blurIntensity = THEME.glass.blurIntensity,
   borderRadius = THEME.borderRadius.md,
-  gradientColors = THEME.glass.gradientColors.card,
+  gradientColors,
   style,
   contentPadding = THEME.spacing.md,
 }) => {
+    const { theme } = useAppTheme();
+    const gradient = gradientColors ?? theme.glass.gradientColors.card;
     return (
       <View style={StyleSheet.flatten([{ borderRadius, overflow: 'hidden' }, style])}>
         <BlurView 
@@ -37,7 +40,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
         />
         
         <LinearGradient
-          colors={gradientColors as [string, string]}
+          colors={gradient as [string, string]}
           style={StyleSheet.absoluteFillObject}
           pointerEvents="none"
         />
@@ -47,7 +50,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
             ...StyleSheet.absoluteFillObject,
             borderRadius,
             borderWidth: 1,
-            borderColor: THEME.colors.border,
+            borderColor: theme.colors.border,
           }}
           pointerEvents="none"
         />

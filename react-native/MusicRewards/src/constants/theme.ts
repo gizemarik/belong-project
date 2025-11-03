@@ -1,6 +1,6 @@
 // Belong design tokens and theme constants
 
-export const THEME = {
+export const DARK_THEME = {
   colors: {
     primary: '#7553DB',     // Belong purple
     secondary: '#34CB76',   // Belong green  
@@ -48,7 +48,33 @@ export const THEME = {
       card: ['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.05)'],
     }
   }
-};
+} as const;
+
+export const LIGHT_THEME = {
+  ...DARK_THEME,
+  colors: {
+    ...DARK_THEME.colors,
+    background: '#FFFFFF',
+    glass: 'rgba(0, 0, 0, 0.06)',
+    text: {
+      primary: '#111111',
+      secondary: 'rgba(0, 0, 0, 0.70)',
+      tertiary: 'rgba(0, 0, 0, 0.50)',
+    },
+    border: 'rgba(0, 0, 0, 0.12)'
+  },
+  glass: {
+    ...DARK_THEME.glass,
+    gradientColors: {
+      primary: ['rgba(117, 83, 219, 0.25)', 'rgba(117, 83, 219, 0.08)'],
+      secondary: ['rgba(0, 0, 0, 0.06)', 'rgba(0, 0, 0, 0.03)'],
+      card: ['rgba(0, 0, 0, 0.08)', 'rgba(0, 0, 0, 0.03)'],
+    }
+  }
+} as const;
+
+// Backward compatibility: existing imports use THEME (dark by default)
+export const THEME = DARK_THEME;
 
 // Sample challenge data with actual Belong tracks
 export const SAMPLE_CHALLENGES = [

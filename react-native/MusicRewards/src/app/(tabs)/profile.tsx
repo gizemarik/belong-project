@@ -5,8 +5,13 @@ import { GlassCard } from '../../components/ui/GlassCard';
 import { useMusicStore, selectChallenges } from '../../stores/musicStore';
 import { useUserStore, selectTotalPoints, selectCompletedChallenges } from '../../stores/userStore';
 import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
+import { GlassButton } from '../../components/ui/GlassButton';
+import { useThemeStore } from '../../stores/themeStore';
 
 export default function ProfileScreen() {
+  const { theme, mode } = useAppTheme();
+  const toggleTheme = useThemeStore((s) => s.toggle);
   const challenges = useMusicStore(selectChallenges);
   const totalPoints = useUserStore(selectTotalPoints);
   const completedChallenges = useUserStore(selectCompletedChallenges);
@@ -14,9 +19,123 @@ export default function ProfileScreen() {
   const totalChallenges = challenges.length;
   const completionRate = totalChallenges > 0 ? (completedChallenges.length / totalChallenges) * 100 : 0;
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      paddingHorizontal: THEME.spacing.md,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: THEME.spacing.lg,
+      marginBottom: THEME.spacing.sm,
+    },
+    header: {
+      flex: 1,
+      fontSize: THEME.fonts.sizes.xxl,
+      fontWeight: 'bold',
+      color: theme.colors.text.primary,
+      textAlign: 'center',
+    },
+    statsCard: {
+      marginBottom: THEME.spacing.md,
+    },
+    statsGrid: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    statItem: {
+      alignItems: 'center',
+    },
+    statValue: {
+      fontSize: THEME.fonts.sizes.xl,
+      fontWeight: 'bold',
+      color: theme.colors.accent,
+      marginBottom: THEME.spacing.xs,
+    },
+    statLabel: {
+      fontSize: THEME.fonts.sizes.sm,
+      color: theme.colors.text.secondary,
+    },
+    progressCard: {
+      marginBottom: THEME.spacing.md,
+    },
+    sectionTitle: {
+      fontSize: THEME.fonts.sizes.lg,
+      fontWeight: 'bold',
+      color: theme.colors.text.primary,
+      marginBottom: THEME.spacing.md,
+    },
+    challengeItem: {
+      marginBottom: THEME.spacing.md,
+    },
+    challengeHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: THEME.spacing.xs,
+    },
+    challengeTitle: {
+      fontSize: THEME.fonts.sizes.md,
+      color: theme.colors.text.primary,
+    },
+    challengeStatus: {
+      fontSize: THEME.fonts.sizes.lg,
+    },
+    progressBar: {
+      height: 6,
+      backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.08)',
+      borderRadius: 3,
+      overflow: 'hidden',
+      marginBottom: THEME.spacing.xs,
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: theme.colors.accent,
+      borderRadius: 3,
+    },
+    progressText: {
+      fontSize: THEME.fonts.sizes.sm,
+      color: theme.colors.text.secondary,
+    },
+    achievementsCard: {
+      marginBottom: THEME.spacing.xl,
+    },
+    achievement: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: THEME.spacing.sm,
+    },
+    achievementIcon: {
+      fontSize: THEME.fonts.sizes.xl,
+      marginRight: THEME.spacing.md,
+    },
+    achievementText: {
+      fontSize: THEME.fonts.sizes.md,
+      color: theme.colors.text.primary,
+    },
+    noAchievements: {
+      fontSize: THEME.fonts.sizes.sm,
+      color: theme.colors.text.tertiary,
+      textAlign: 'center',
+      fontStyle: 'italic',
+    },
+  });
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Your Progress</Text>
+      <View style={styles.headerRow}>
+        <View style={{ width: 96 }} />
+        <Text style={styles.header}>Your Progress</Text>
+        <GlassButton
+          title={mode === 'dark' ? '🌞 Light' : '🌙 Dark'}
+          onPress={toggleTheme}
+          variant="secondary"
+          style={{ width: 96 }}
+        />
+      </View>
 
       {/* Removed success toast demo trigger */}
 
@@ -46,10 +165,10 @@ export default function ProfileScreen() {
           return (
             <View key={challenge.id} style={styles.challengeItem}>
               <View style={styles.challengeHeader}>
-                <Text style={styles.challengeTitle}>{challenge.title}</Text>
+            <Text style={styles.challengeTitle}>{challenge.title}</Text>
                 <Text style={[
                   styles.challengeStatus,
-                  { color: isCompleted ? THEME.colors.secondary : THEME.colors.text.secondary }
+              { color: isCompleted ? theme.colors.secondary : theme.colors.text.secondary }
                 ]}>
                   {isCompleted ? '✅' : '⏳'}
                 </Text>

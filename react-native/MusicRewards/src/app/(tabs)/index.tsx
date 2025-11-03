@@ -7,12 +7,14 @@ import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { useMusicStore, selectChallenges, selectCurrentTrack, selectIsPlaying } from '../../stores/musicStore';
 import { useUserStore } from '../../stores/userStore';
 import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 import type { MusicChallenge } from '../../types';
 import TrackPlayer from 'react-native-track-player';
 import { GlassButton } from '../../components/ui/GlassButton';
 import { useToast } from '../../hooks/useToast';
 
 export default function HomeScreen() {
+  const { theme } = useAppTheme();
   const challenges = useMusicStore(selectChallenges);
   const currentTrack = useMusicStore(selectCurrentTrack);
   const isPlaying = useMusicStore(selectIsPlaying);
@@ -33,6 +35,31 @@ export default function HomeScreen() {
       toast.error('Failed to start playback');
     }
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      paddingHorizontal: THEME.spacing.md,
+      paddingTop: THEME.spacing.lg,
+    },
+    header: {
+      fontSize: THEME.fonts.sizes.xxl,
+      fontWeight: 'bold',
+      color: theme.colors.text.primary,
+      textAlign: 'center',
+      marginBottom: THEME.spacing.sm,
+    },
+    subtitle: {
+      fontSize: THEME.fonts.sizes.sm,
+      color: theme.colors.text.secondary,
+      textAlign: 'center',
+      marginBottom: THEME.spacing.lg,
+    },
+    listContainer: {
+      paddingBottom: THEME.spacing.xl,
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -64,28 +91,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.colors.background,
-    paddingHorizontal: THEME.spacing.md,
-    paddingTop: THEME.spacing.lg,
-  },
-  header: {
-    fontSize: THEME.fonts.sizes.xxl,
-    fontWeight: 'bold',
-    color: THEME.colors.text.primary,
-    marginBottom: THEME.spacing.sm,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: THEME.fonts.sizes.sm,
-    color: THEME.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: THEME.spacing.lg,
-  },
-  listContainer: {
-    paddingBottom: THEME.spacing.xl,
-  },
-});

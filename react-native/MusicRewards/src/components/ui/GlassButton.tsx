@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 import { GlassCard } from './GlassCard';
 import { haptics } from '../../utils/haptics';
 
@@ -35,10 +36,11 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   accessibilityLabel,
   accessibilityHint,
 }) => {
+  const { theme } = useAppTheme();
   const gradientColors =
     variant === 'primary'
-      ? THEME.glass.gradientColors.primary
-      : THEME.glass.gradientColors.secondary;
+      ? theme.glass.gradientColors.primary
+      : theme.glass.gradientColors.secondary;
 
   return (
     <TouchableOpacity
@@ -58,9 +60,9 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
       <GlassCard gradientColors={gradientColors} style={styles.button} contentPadding={0}>
         <View style={styles.buttonContent}>
           {loading ? (
-            <ActivityIndicator color={THEME.colors.text.primary} size="small" />
+            <ActivityIndicator color={theme.colors.text.primary} size="small" />
           ) : (
-            <Text style={[styles.buttonText, textStyle]}>{title}</Text>
+            <Text style={[{ color: theme.colors.text.primary }, styles.buttonText, textStyle]}>{title}</Text>
           )}
         </View>
       </GlassCard>
@@ -81,7 +83,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: THEME.colors.text.primary,
     fontSize: 16,
     fontWeight: '600',
   },

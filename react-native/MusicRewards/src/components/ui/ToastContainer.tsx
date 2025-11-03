@@ -1,27 +1,28 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 import { useToastStore } from '../../stores/toastStore';
 
 export const ToastContainer: React.FC = () => {
   const toast = useToastStore((s) => s.toast);
   const hide = useToastStore((s) => s.hide);
+  const { theme } = useAppTheme();
 
   if (!toast) return null;
 
   // Opaque background using existing theme colors only
-  const bg = THEME.colors.background;
+  const bg = theme.colors.background;
   const border = toast.variant === 'success'
-    ? THEME.colors.secondary
+    ? theme.colors.secondary
     : toast.variant === 'error'
-    ? THEME.colors.accent
-    : THEME.colors.border;
+    ? theme.colors.accent
+    : theme.colors.border;
 
   return (
     <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
       <View pointerEvents="box-none" style={[styles.wrapper, { paddingTop: Platform.select({ ios: 54, android: 24, default: 24 }) }]}>
         <TouchableOpacity onPress={hide} activeOpacity={0.9} style={[styles.banner, { backgroundColor: bg, borderColor: border }]}>
-          <Text style={styles.message}>{toast.message}</Text>
+          <Text style={[styles.message, { color: theme.colors.text.primary }]}>{toast.message}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -39,14 +40,13 @@ const styles = StyleSheet.create({
   banner: {
     maxWidth: 560,
     width: '90%',
-    borderRadius: THEME.borderRadius.md,
-    paddingVertical: THEME.spacing.sm,
-    paddingHorizontal: THEME.spacing.md,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderWidth: 1,
   },
   message: {
-    color: THEME.colors.text.primary,
-    fontSize: THEME.fonts.sizes.md,
+    fontSize: 16,
     textAlign: 'center',
   },
 });

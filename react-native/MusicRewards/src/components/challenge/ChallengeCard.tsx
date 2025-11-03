@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { GlassCard } from '../ui/GlassCard';
 import { GlassButton } from '../ui/GlassButton';
 import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 import type { MusicChallenge } from '../../types';
 
 interface ChallengeCardProps {
@@ -21,6 +22,7 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   isPlaying = false,
   onPressCard,
 }) => {
+  const { theme, mode } = useAppTheme();
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -29,10 +31,10 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return THEME.colors.secondary;
-      case 'medium': return THEME.colors.accent;
-      case 'hard': return THEME.colors.primary;
-      default: return THEME.colors.text.secondary;
+      case 'easy': return theme.colors.secondary;
+      case 'medium': return theme.colors.accent;
+      case 'hard': return theme.colors.primary;
+      default: return theme.colors.text.secondary;
     }
   };
 
@@ -51,53 +53,53 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
       <GlassCard
         style={StyleSheet.flatten([
           styles.card,
-          isCurrentTrack && styles.currentTrackCard
+          isCurrentTrack && { borderWidth: 2, borderColor: theme.colors.primary }
         ])}
         gradientColors={
           isCurrentTrack
-            ? THEME.glass.gradientColors.primary
-            : THEME.glass.gradientColors.card
+            ? theme.glass.gradientColors.primary
+            : theme.glass.gradientColors.card
         }
       >
       <View style={styles.header}>
         <View style={styles.titleSection}>
-          <Text style={styles.title}>{challenge.title}</Text>
-          <Text style={styles.artist}>{challenge.artist}</Text>
+          <Text style={[styles.title, { color: theme.colors.text.primary }]}>{challenge.title}</Text>
+          <Text style={[styles.artist, { color: theme.colors.text.secondary }]}>{challenge.artist}</Text>
         </View>
         <View style={StyleSheet.flatten([
           styles.difficultyBadge,
           { backgroundColor: getDifficultyColor(challenge.difficulty) }
         ])}>
-          <Text style={styles.difficultyText}>
+          <Text style={[styles.difficultyText, { color: theme.colors.background }]}>
             {challenge.difficulty.toUpperCase()}
           </Text>
         </View>
       </View>
 
-      <Text style={styles.description} numberOfLines={2}>
+      <Text style={[styles.description, { color: theme.colors.text.tertiary }]} numberOfLines={2}>
         {challenge.description}
       </Text>
 
       <View style={styles.infoRow}>
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Duration</Text>
-          <Text style={styles.infoValue}>{formatDuration(challenge.duration)}</Text>
+          <Text style={[styles.infoLabel, { color: theme.colors.text.tertiary }]}>Duration</Text>
+          <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>{formatDuration(challenge.duration)}</Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Points</Text>
-          <Text style={[styles.infoValue, { color: THEME.colors.accent }]}> 
+          <Text style={[styles.infoLabel, { color: theme.colors.text.tertiary }]}>Points</Text>
+          <Text style={[styles.infoValue, { color: theme.colors.accent }]}> 
             {challenge.points}
           </Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Progress</Text>
-          <Text style={styles.infoValue}>{Math.round(challenge.progress)}%</Text>
+          <Text style={[styles.infoLabel, { color: theme.colors.text.tertiary }]}>Progress</Text>
+          <Text style={[styles.infoValue, { color: theme.colors.text.primary }]}>{Math.round(challenge.progress)}%</Text>
         </View>
       </View>
 
       {challenge.progress > 0 && (
         <View style={styles.progressContainer}>
-          <View style={styles.progressTrack}>
+          <View style={[styles.progressTrack, { backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.08)' }]}>
             <View
               style={StyleSheet.flatten([
                 styles.progressFill,
@@ -124,10 +126,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: THEME.spacing.md,
   },
-  currentTrackCard: {
-    borderWidth: 2,
-    borderColor: THEME.colors.primary,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -141,12 +139,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: THEME.fonts.sizes.lg,
     fontWeight: 'bold',
-    color: THEME.colors.text.primary,
     marginBottom: THEME.spacing.xs,
   },
   artist: {
     fontSize: THEME.fonts.sizes.md,
-    color: THEME.colors.text.secondary,
   },
   difficultyBadge: {
     paddingHorizontal: THEME.spacing.sm,
@@ -156,11 +152,9 @@ const styles = StyleSheet.create({
   difficultyText: {
     fontSize: THEME.fonts.sizes.xs,
     fontWeight: 'bold',
-    color: THEME.colors.background,
   },
   description: {
     fontSize: THEME.fonts.sizes.sm,
-    color: THEME.colors.text.tertiary,
     lineHeight: 20,
     marginBottom: THEME.spacing.md,
   },
@@ -174,20 +168,17 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: THEME.fonts.sizes.xs,
-    color: THEME.colors.text.tertiary,
     marginBottom: THEME.spacing.xs,
   },
   infoValue: {
     fontSize: THEME.fonts.sizes.sm,
     fontWeight: '600',
-    color: THEME.colors.text.primary,
   },
   progressContainer: {
     marginBottom: THEME.spacing.md,
   },
   progressTrack: {
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
     overflow: 'hidden',
   },

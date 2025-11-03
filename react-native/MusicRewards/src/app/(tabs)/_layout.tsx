@@ -1,22 +1,23 @@
 // Tab layout for main navigation
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
-import { THEME } from '../../constants/theme';
+import { useAppTheme } from '../../hooks/useAppTheme';
 
 export default function TabLayout() {
+  const { theme } = useAppTheme();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: THEME.colors.primary,
-        tabBarInactiveTintColor: THEME.colors.text.secondary,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.text.secondary,
         tabBarStyle: {
-          backgroundColor: THEME.colors.background,
-          borderTopColor: THEME.colors.border,
+          backgroundColor: theme.colors.background,
+          borderTopColor: theme.colors.border,
         },
         headerStyle: {
-          backgroundColor: THEME.colors.background,
+          backgroundColor: theme.colors.background,
         },
-        headerTintColor: THEME.colors.text.primary,
+        headerTintColor: theme.colors.text.primary,
       }}
     >
       <Tabs.Screen
