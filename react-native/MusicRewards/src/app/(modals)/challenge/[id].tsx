@@ -27,6 +27,7 @@ export default function ChallengeDetailModal() {
   const { play } = useMusicPlayer();
   const currentTrack = useMusicStore((s) => s.currentTrack);
   const wasCompletedRef = React.useRef(false);
+  const [openingPlayer, setOpeningPlayer] = React.useState(false);
 
   React.useEffect(() => {
     const now = !!challenge?.completed;
@@ -122,12 +123,21 @@ export default function ChallengeDetailModal() {
         <View style={styles.actions}>
           {/* Confetti moved to full-screen overlay */}
           <GlassButton title="Open Player" onPress={async () => {
-            if (!challenge) return;
-            if (!currentTrack || currentTrack.id !== challenge.id) {
-              await play(challenge);
+            if (openingPlayer) return;
+            setOpeningPlayer(true);
+            try {
+              if (!challenge) return;
+              if (!currentTrack || currentTrack.id !== challenge.id) {
+                await play(challenge);
+              }
+              router.push('/(modals)/player');
+            } finally {
+              // Small delay to avoid rapid re-entry
+              setTimeout(() => setOpeningPlayer(false), 600);
             }
-            router.push('/(modals)/player');
           }} variant="primary"
+            loading={openingPlayer}
+            disabled={openingPlayer}
             accessibilityLabel="Open player"
             accessibilityHint="Opens the full screen audio player"
           />

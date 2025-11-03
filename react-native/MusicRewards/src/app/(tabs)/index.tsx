@@ -1,5 +1,5 @@
 // Home screen - Challenge list (Expo Router)
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { ChallengeList } from '../../components/challenge/ChallengeList';
@@ -16,6 +16,7 @@ import { useToast } from '../../hooks/useToast';
 
 export default function HomeScreen() {
   const { theme } = useAppTheme();
+  const [openingPlayer, setOpeningPlayer] = useState(false);
   
   const currentTrack = useMusicStore(selectCurrentTrack);
   const { play, resume } = useMusicPlayer();
@@ -24,6 +25,8 @@ export default function HomeScreen() {
 
   const handlePlayChallenge = async (challenge: MusicChallenge) => {
     try {
+      if (openingPlayer) return;
+      setOpeningPlayer(true);
       if (currentTrack?.id === challenge.id) {
         await resume();
       } else {
@@ -31,9 +34,11 @@ export default function HomeScreen() {
       }
       // Navigate to player modal after starting playback
       router.push('/(modals)/player');
+      setTimeout(() => setOpeningPlayer(false), 600);
     } catch (error) {
       console.error('Failed to play challenge:', error);
       toast.error('Failed to start playback');
+      setOpeningPlayer(false);
     }
   };
 

@@ -24,6 +24,7 @@ const ChallengeCardBase: React.FC<ChallengeCardProps> = ({
   onPressCard,
 }) => {
   const { theme, mode } = useAppTheme();
+  const [starting, setStarting] = React.useState(false);
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -106,9 +107,18 @@ const ChallengeCardBase: React.FC<ChallengeCardProps> = ({
 
       <GlassButton
         title={getButtonTitle()}
-        onPress={() => onPlay(challenge)}
+        onPress={() => {
+          if (starting) return;
+          setStarting(true);
+          try {
+            onPlay(challenge);
+          } finally {
+            setTimeout(() => setStarting(false), 600);
+          }
+        }}
         variant={isCurrentTrack ? 'primary' : 'secondary'}
-        disabled={challenge.completed}
+        disabled={challenge.completed || starting}
+        loading={starting}
         style={styles.playButton}
       />
       </GlassCard>
