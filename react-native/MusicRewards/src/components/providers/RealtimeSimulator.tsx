@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useMusicStore } from '../../stores/musicStore';
 import { useUserStore } from '../../stores/userStore';
 import { useToast } from '../../hooks/useToast';
+import { completeChallengeFlow } from '../../services/challengeActions';
 
 // Simple real-time simulation: periodically emits "server" updates
 // - Increment progress on a random incomplete challenge
@@ -15,8 +16,7 @@ export const RealtimeSimulator: React.FC = () => {
     const tick = () => {
       if (cancelled) return;
       try {
-        const { challenges, updateProgress, markChallengeComplete } = useMusicStore.getState();
-        const { completedChallenges, completeChallenge, addPoints } = useUserStore.getState();
+        const { challenges, updateProgress } = useMusicStore.getState();
 
         const open = challenges.filter((c) => !c.completed && c.progress < 100);
         if (open.length === 0) return;
@@ -31,11 +31,7 @@ export const RealtimeSimulator: React.FC = () => {
 
         if (next >= 100) {
           // Simulate server completing it and awarding points once
-          markChallengeComplete(target.id);
-          if (!completedChallenges.includes(target.id)) {
-            completeChallenge(target.id);
-            addPoints(target.points);
-          }
+          completeChallengeFlow(target.id);
           toast.info(`Server completed: ${target.title}`);
         } else {
           toast.info(`Server progress: ${target.title} → ${Math.round(next)}%`);

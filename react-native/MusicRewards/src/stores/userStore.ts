@@ -49,18 +49,6 @@ export const useUserStore = create<UserStore>()(
             ? state.completedChallenges
             : [...state.completedChallenges, challengeId],
         }));
-        try {
-          const prevUserHas = get().completedChallenges.includes(challengeId);
-          const musicState = require('./musicStore');
-          const useMusicStore = musicState.useMusicStore as typeof import('./musicStore').useMusicStore;
-          const ch = useMusicStore.getState().challenges.find((c) => c.id === challengeId);
-          const prevMusicStatus = {
-            completed: Boolean(ch?.completed),
-            progress: typeof ch?.progress === 'number' ? ch!.progress : 0,
-            completedAt: ch?.completedAt,
-          };
-          useSyncStore.getState().enqueue({ type: 'COMPLETE_CHALLENGE', challengeId, prevUserHas, prevMusicStatus });
-        } catch {}
       },
 
       uncompleteChallenge: (challengeId: string) => {

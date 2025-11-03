@@ -8,6 +8,7 @@ import { THEME } from '../../constants/theme';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import { GlassButton } from '../../components/ui/GlassButton';
 import { useThemeStore } from '../../stores/themeStore';
+import { ProgressBar } from '../../components/ui/ProgressBar';
 
 export default function ProfileScreen() {
   const { theme, mode } = useAppTheme();
@@ -173,14 +174,7 @@ export default function ProfileScreen() {
                   {isCompleted ? '✅' : '⏳'}
                 </Text>
               </View>
-              <View style={styles.progressBar}>
-                <View 
-                  style={[
-                    styles.progressFill,
-                    { width: `${challenge.progress}%` }
-                  ]} 
-                />
-              </View>
+              <ProgressBar progress={challenge.progress} animated={false} height={6} />
               <Text style={styles.progressText}>
                 {Math.round(challenge.progress)}% • {challenge.points} points
               </Text>

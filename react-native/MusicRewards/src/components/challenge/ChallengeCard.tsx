@@ -6,6 +6,7 @@ import { GlassButton } from '../ui/GlassButton';
 import { THEME } from '../../constants/theme';
 import { useAppTheme } from '../../hooks/useAppTheme';
 import type { MusicChallenge } from '../../types';
+import { ProgressBar } from '../ui/ProgressBar';
 
 interface ChallengeCardProps {
   challenge: MusicChallenge;
@@ -99,14 +100,7 @@ const ChallengeCardBase: React.FC<ChallengeCardProps> = ({
 
       {challenge.progress > 0 && (
         <View style={styles.progressContainer}>
-          <View style={[styles.progressTrack, { backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.08)' }]}>
-            <View
-              style={StyleSheet.flatten([
-                styles.progressFill,
-                { width: `${challenge.progress}%` }
-              ])}
-            />
-          </View>
+          <ProgressBar progress={challenge.progress} animated={false} height={4} />
         </View>
       )}
 

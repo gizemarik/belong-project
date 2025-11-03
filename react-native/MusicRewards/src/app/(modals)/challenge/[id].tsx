@@ -1,6 +1,6 @@
 // Challenge Detail (modal)
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import type { PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import ConfettiCannon from 'react-native-confetti-cannon';
@@ -10,20 +10,31 @@ import { GlassButton } from '../../../components/ui/GlassButton';
 import { THEME } from '../../../constants/theme';
 import { useMusicStore } from '../../../stores/musicStore';
 import { useMusicPlayer } from '../../../hooks/useMusicPlayer';
-import { useUserStore } from '../../../stores/userStore';
+import { useAppTheme } from '../../../hooks/useAppTheme';
+// removed unused useUserStore after centralizing completion flow
+// Progress bar left inline here due to module resolution quirk in this path
+import { completeChallengeFlow } from '../../../services/challengeActions';
+ 
+import { haptics } from '../../../utils/haptics';
 
 export default function ChallengeDetailModal() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { width: windowWidth } = useWindowDimensions();
   const challenge = useMusicStore((s) => s.challenges.find((c) => c.id === id));
+  const { theme } = useAppTheme();
 
-  const markChallengeComplete = useMusicStore((s) => s.markChallengeComplete);
-  const setCurrentTrack = useMusicStore((s) => s.setCurrentTrack);
-  const setCurrentPosition = useMusicStore((s) => s.setCurrentPosition);
+  // Removed unused store selectors after centralizing completion flow
   const { play } = useMusicPlayer();
   const currentTrack = useMusicStore((s) => s.currentTrack);
-  const completedChallenges = useUserStore((s) => s.completedChallenges);
-  const addPoints = useUserStore((s) => s.addPoints);
-  const completeChallenge = useUserStore((s) => s.completeChallenge);
+  const wasCompletedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    const now = !!challenge?.completed;
+    if (now && !wasCompletedRef.current) {
+      try { haptics.heavy(); } catch {}
+    }
+    wasCompletedRef.current = now;
+  }, [challenge?.completed]);
 
   // Swipe-to-close (downward) gesture (MUST be before any conditional returns)
   const panTransY = React.useRef(0);
@@ -57,7 +68,7 @@ export default function ChallengeDetailModal() {
   if (!challenge) {
     return (
       <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.centered}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.centered}>
         <GlassCard style={styles.centerCard}>
           <Text style={styles.title}>Challenge not found</Text>
           <GlassButton title="Close" onPress={() => router.back()} variant="secondary" />
@@ -69,17 +80,13 @@ export default function ChallengeDetailModal() {
 
   const handleMarkComplete = () => {
     if (challenge.completed) return;
-    markChallengeComplete(challenge.id);
-    if (!completedChallenges.includes(challenge.id)) {
-      completeChallenge(challenge.id);
-      addPoints(challenge.points);
-    }
+    completeChallengeFlow(challenge.id);
   };
 
   return (
     <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
     <View style={styles.wrapper}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]} contentContainerStyle={styles.content}>
 
       <GlassCard style={styles.card}>
         <Text style={styles.title}>{challenge.title}</Text>
@@ -141,7 +148,7 @@ export default function ChallengeDetailModal() {
           <ConfettiCannon
             key={`confetti-${challenge.id}`}
             count={180}
-            origin={{ x: Dimensions.get('window').width / 2, y: 0 }}
+            origin={{ x: windowWidth / 2, y: -30 }}
             autoStart
             fadeOut={false}
             explosionSpeed={200}
@@ -239,7 +246,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: -30,
     zIndex: 99999,
     elevation: 99999,
   },

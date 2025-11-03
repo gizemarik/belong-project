@@ -6,8 +6,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  ScrollView,
   ActivityIndicator,
-  Alert
+  Alert,
+  useWindowDimensions
 } from 'react-native';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { GlassButton } from '../../components/ui/GlassButton';
@@ -18,15 +20,16 @@ import { PointsCounter } from '../../components/ui/PointsCounter';
 import { SpeedControls } from '../../components/ui/SpeedControls';
   import AudioVisualizer from '../../components/ui/AudioVisualizer';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { Dimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import type { PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useMusicStore } from '../../stores/musicStore';
+import { ProgressBar } from '../../components/ui/ProgressBar';
+import { haptics } from '../../utils/haptics';
 
 export default function PlayerModal() {
   const { theme, mode } = useAppTheme();
+  const { width: windowWidth } = useWindowDimensions();
   const {
     currentTrack,
     isPlaying,
@@ -42,8 +45,6 @@ export default function PlayerModal() {
     error
   } = useMusicPlayer();
   const [progressWidth, setProgressWidth] = useState(1);
-  // Animated progress percent (0..100)
-  const progressPct = useSharedValue(0);
   const confettiRef = useRef<any>(null);
   // Read canonical challenge data from the store by id to avoid stale flags
   const canonicalChallenge = useMusicStore((s) =>
@@ -55,6 +56,7 @@ export default function PlayerModal() {
     const done = !!canonicalChallenge?.completed;
     if (done && !prevCompletedRef.current) {
       try { confettiRef.current?.start?.(); } catch {}
+      try { haptics.heavy(); } catch {}
     }
     prevCompletedRef.current = done;
   }, [canonicalChallenge?.completed]);
@@ -97,18 +99,7 @@ export default function PlayerModal() {
     }
   };
 
-  // Animate progress smoothly whenever it changes
   const computedProgress = getProgress();
-  useEffect(() => {
-    const next = Math.max(0, Math.min(100, computedProgress || 0));
-    progressPct.value = withTiming(next, { duration: 240 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [computedProgress]);
-
-  const progressFillAnimatedStyle = useAnimatedStyle(() => {
-    const px = (progressWidth || 0) * (progressPct.value / 100);
-    return { width: px };
-  }, [progressWidth]);
 
   const handlePlayPause = async () => {
     if (isPlaying) {
@@ -156,7 +147,7 @@ export default function PlayerModal() {
   return (
     <PanGestureHandler onGestureEvent={onGestureEvent} onHandlerStateChange={onHandlerStateChange}>
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.content}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         {/* Track Info */}
         <GlassCard style={styles.trackInfoCard}>
           <Text style={[styles.trackTitle, { color: theme.colors.text.primary }]}>{currentTrack.title}</Text>
@@ -182,7 +173,7 @@ export default function PlayerModal() {
         </GlassCard>
 
         {/* Progress Section */}
-        <GlassCard style={styles.progressCard}>
+        <GlassCard>
           <Text style={[styles.progressLabel, { color: theme.colors.text.primary }]}>Listening Progress</Text>
 
 
@@ -199,9 +190,7 @@ export default function PlayerModal() {
             accessibilityLabel="Listening progress"
             accessibilityValue={{ min: 0, max: 100, now: Math.round(getProgress()) }}
           >
-            <View style={styles.progressBackground}>
-              <Animated.View style={[styles.progressFill, progressFillAnimatedStyle]} />
-            </View>
+            <ProgressBar progress={computedProgress} animated height={8} />
           </TouchableOpacity>
 
           {/* Time Display */}
@@ -217,10 +206,10 @@ export default function PlayerModal() {
         </GlassCard>
 
         {/* Controls */}
-        <GlassCard style={styles.controlsCard}>
+        <GlassCard>
           <View style={styles.controlsRow}>
             <GlassButton
-              title="⏪ -10s"
+              title="-10s ⏪"
               onPress={() => handleSeek(Math.max(0, getProgress() - (10 / duration) * 100))}
               variant="secondary"
               style={styles.controlButton}
@@ -256,7 +245,7 @@ export default function PlayerModal() {
         <SpeedControls rate={rate} setRate={setRate} />
 
         {/* Challenge Progress */}
-        <GlassCard style={styles.challengeCard}>
+        <GlassCard>
           <Text style={styles.challengeLabel}>Challenge Status</Text>
           <View style={styles.challengeInfo}>
             <Text style={[
@@ -270,12 +259,12 @@ export default function PlayerModal() {
             </Text>
           </View>
         </GlassCard>
-      </View>
+      </ScrollView>
       {/* Full-screen confetti overlay to match Challenge Detail */}
       <View pointerEvents="none" style={styles.confettiOverlayRoot}>
         <ConfettiCannon
           count={180}
-          origin={{ x: Dimensions.get('window').width / 2, y: 0 }}
+          origin={{ x: windowWidth / 2, y: -30 }}
           autoStart={false}
           fadeOut={false}
           ref={confettiRef}
@@ -294,17 +283,20 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.colors.background,
     position: 'relative',
   },
-  content: {
+  scroll: {
     flex: 1,
-    padding: THEME.spacing.lg,
-    justifyContent: 'space-between',
+  },
+  content: {
+    padding: THEME.spacing.md,
+    paddingBottom: THEME.spacing.lg,
+    gap: THEME.spacing.md,
   },
   confettiOverlayRoot: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: -30,
     zIndex: 99999,
     elevation: 99999,
   },
@@ -353,27 +345,14 @@ const styles = StyleSheet.create({
     fontSize: THEME.fonts.sizes.sm,
     color: THEME.colors.text.tertiary,
     textAlign: 'center',
-    marginBottom: THEME.spacing.lg,
+    marginBottom: THEME.spacing.md,
   },
   visualizerContainer: {
     marginTop: THEME.spacing.sm,
     width: '100%',
   },
-  pointsContainer: {
-    alignItems: 'center',
-  },
-  pointsLabel: {
-    fontSize: THEME.fonts.sizes.sm,
-    color: THEME.colors.text.secondary,
-  },
-  pointsValue: {
-    fontSize: THEME.fonts.sizes.xl,
-    fontWeight: 'bold',
-    color: THEME.colors.accent,
-  },
-  progressCard: {
-    // Card styling handled by GlassCard
-  },
+  
+  
   progressLabel: {
     fontSize: THEME.fonts.sizes.md,
     fontWeight: '600',
@@ -384,17 +363,7 @@ const styles = StyleSheet.create({
   progressTrack: {
     marginBottom: THEME.spacing.md,
   },
-  progressBackground: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: THEME.colors.accent,
-    borderRadius: 4,
-  },
+  
   timeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -410,9 +379,7 @@ const styles = StyleSheet.create({
     color: THEME.colors.accent,
     textAlign: 'center',
   },
-  controlsCard: {
-    // Card styling handled by GlassCard
-  },
+  
   controlsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -432,9 +399,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: THEME.spacing.md,
   },
-  challengeCard: {
-    // Card styling handled by GlassCard
-  },
+  
   challengeLabel: {
     fontSize: THEME.fonts.sizes.md,
     fontWeight: '600',

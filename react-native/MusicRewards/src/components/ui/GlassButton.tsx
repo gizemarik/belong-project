@@ -45,7 +45,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={() => {
-        haptics.selection();
+        haptics.heavy();
         onPress();
       }}
       disabled={disabled || loading}

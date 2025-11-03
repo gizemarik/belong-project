@@ -7,22 +7,23 @@ Modern React Native app demonstrating audio playback with points rewards, glass 
 Prerequisites:
 - Node 18+
 - Xcode (for iOS), Android Studio (for Android)
+- JDK 17
 - Expo CLI (optional)
 
 Install and run:
 ```bash
-npm install
+npm ci
 # iOS (first time)
 npx pod-install
 
-# Start Metro
-npx expo start
+# Start dev server
+npm run start
 
-# Run iOS Simulator
-npx expo run:ios
+# iOS Simulator
+npm run ios
 
-# Run Android Emulator / Device
-npx expo run:android
+# Android Emulator / Device
+npm run android
 ```
 
 Notes:
@@ -37,6 +38,7 @@ Notes:
 5. Profile tab shows total points and completions.
 6. Theme toggle: available on the Profile screen (switch between dark/light).
 7. Reset button (Home): included for local testing to quickly reset progress/state during development.
+8. Haptics: Button presses and completion events use heavy haptics by default.
 
 ## 📁 Project Structure
 ```
@@ -61,13 +63,35 @@ src/
 - See `ARCHITECTURE.md` for detailed design decisions.
 - Highlights:
   - Zustand stores (`musicStore`, `userStore`, `syncStore`) with selective persistence.
+  - `settingsStore`: persisted test setting for enabling haptic feedback during confetti.
   - Hooks (`useMusicPlayer`, `useChallenges`, `usePointsCounter`) isolate business logic.
   - TrackPlayer configured with background service and interruption handling.
   - Glass design system using `expo-blur` and `expo-linear-gradient`.
 
 ## ⚙️ Platform Notes
 - iOS: `Info.plist` includes `UIBackgroundModes` → `audio`.
-- Android: `appKilledPlaybackBehavior` set to `StopPlaybackAndRemoveNotification` (deliberate kill stops playback).
+- Android:
+  - New Architecture disabled (`newArchEnabled=false`) for `react-native-track-player` compatibility.
+  - Hermes enabled.
+  - `appKilledPlaybackBehavior=StopPlaybackAndRemoveNotification` (deliberate kill stops playback).
+
+## 🛠 Android Environment
+Set up Android SDK and JDK 17:
+```bash
+# Example paths – adjust to your machine
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH"
+
+# Ensure Java 17 is active
+export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+```
+
+Build & install (emulator must be running):
+```bash
+# One-liner from project root
+cd android && ./gradlew clean app:assembleDebug && adb install -r app/build/outputs/apk/debug/app-debug.apk && cd ..
+```
 
 ## 🧪 Known Issues / Limitations
 - No backend; `syncStore.flushNow` is a placeholder.

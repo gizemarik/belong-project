@@ -7,8 +7,8 @@ import TrackPlayer, {
   Event,
   useTrackPlayerEvents,
 } from 'react-native-track-player';
-import { useMusicStore, selectCurrentTrack, selectIsPlaying } from '../stores/musicStore';
-import { useUserStore } from '../stores/userStore';
+import { useMusicStore, selectCurrentTrack } from '../stores/musicStore';
+import { completeChallengeFlow } from '../services/challengeActions';
 import type { MusicChallenge, UseMusicPlayerReturn } from '../types';
 import { setupTrackPlayer } from '../services/audioService';
 import { useToast } from './useToast';
@@ -26,14 +26,11 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
   
   // Zustand store selectors
   const currentTrack = useMusicStore(selectCurrentTrack);
-  const isPlaying = useMusicStore(selectIsPlaying);
   const setCurrentTrack = useMusicStore((state) => state.setCurrentTrack);
   const setIsPlaying = useMusicStore((state) => state.setIsPlaying);
   const setCurrentPosition = useMusicStore((state) => state.setCurrentPosition);
   const updateProgress = useMusicStore((state) => state.updateProgress);
-  const markChallengeComplete = useMusicStore((state) => state.markChallengeComplete);
-  const addPoints = useUserStore((state) => state.addPoints);
-  const completeChallenge = useUserStore((state) => state.completeChallenge);
+  
 
   // Track playback state changes (guard against update loops)
   const prevIsPlayingRef = useRef<boolean | null>(null);
@@ -98,11 +95,9 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
 
     // Completion check at 100%
     if (percent >= 100 && currentTrack && !currentTrack.completed) {
-      markChallengeComplete(currentTrackId);
-      completeChallenge(currentTrackId);
-      addPoints(currentTrack.points);
+      completeChallengeFlow(currentTrackId);
     }
-  }, [progress.position, progress.duration, currentTrackId, setCurrentPosition, updateProgress, markChallengeComplete, completeChallenge, addPoints, currentTrack]);
+  }, [progress.position, progress.duration, currentTrackId, setCurrentPosition, updateProgress, currentTrack]);
 
   // Handle track player events
   useTrackPlayerEvents([Event.PlaybackError, Event.PlaybackQueueEnded], (event) => {
@@ -115,9 +110,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
       const id = currentTrack?.id;
       if (id && !currentTrack?.completed) {
         updateProgress(id, 100);
-        markChallengeComplete(id);
-        completeChallenge(id);
-        if (currentTrack) addPoints(currentTrack.points);
+        completeChallengeFlow(id);
       }
     }
   });

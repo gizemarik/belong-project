@@ -37,6 +37,7 @@ This document explains key design decisions for MusicRewards.
   - Interruption handling (iOS): pause on begin, resume conservatively on end
 - Platform:
   - iOS `Info.plist` → `UIBackgroundModes: audio`
+  - Android: New Architecture disabled for `react-native-track-player` compatibility; Hermes enabled.
 
 ## UI / UX
 - Glass design system:
@@ -46,6 +47,10 @@ This document explains key design decisions for MusicRewards.
   - Progress bar with smooth width animation
   - ±10s controls, Play/Pause, speed controls
   - Accessibility roles/labels for progress and buttons
+
+### Haptics
+- Heavy haptics are used by default for button presses and completion events.
+- The previous test toggle for confetti haptics was removed; behavior is always-on for a consistent UX.
 
 ## Error Handling & Stability
 - Global `ErrorBoundary` around app content with themed fallback

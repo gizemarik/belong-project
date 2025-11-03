@@ -21,6 +21,10 @@
       "bundleIdentifier": "com.wallinex.musicrewards-test-app"
     },
     "android": {
+      "permissions": [
+        "POST_NOTIFICATIONS",
+        "FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

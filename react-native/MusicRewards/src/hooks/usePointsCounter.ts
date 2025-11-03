@@ -17,10 +17,15 @@ export function usePointsCounter(): UsePointsCounterReturn {
     if (!isActive || !config) return;
     const duration = tpProgress.duration || 0;
     const position = tpProgress.position || 0;
-    const pct = duration > 0 ? (position / duration) * 100 : 0;
-    const earned = Math.floor((pct / 100) * config.totalPoints);
+    const pctRaw = duration > 0 ? (position / duration) * 100 : 0;
+    const pct = Math.max(0, Math.min(100, pctRaw));
+    // Avoid off-by-one at the end due to floating imprecision or slight underflow of position
+    const nearEnd = duration > 0 && (pct >= 99.9 || (duration - position) <= 0.5);
+    const earned = nearEnd
+      ? config.totalPoints
+      : Math.floor((pct / 100) * config.totalPoints);
     setProgress(pct);
-    setPointsEarned(earned);
+    setPointsEarned(Math.min(config.totalPoints, earned));
   }, [tpProgress.position, tpProgress.duration, isActive, config]);
 
   useEffect(() => {

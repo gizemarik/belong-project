@@ -31,12 +31,8 @@ export const useToastStore = create<ToastStore>((set) => ({
     const variant = opts?.variant ?? 'info';
     const duration = opts?.durationMs ?? 2500;
     set({ toast: { id, message, variant } });
-    // Haptic per variant (best-effort)
-    try {
-      if (variant === 'success') haptics.success();
-      else if (variant === 'error') haptics.error();
-      else haptics.selection();
-    } catch {}
+    // Unified stronger haptic for all toasts
+    try { haptics.heavy(); } catch {}
     if (duration > 0) {
       timeoutRef = setTimeout(() => {
         set({ toast: null });

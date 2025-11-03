@@ -1,10 +1,10 @@
 // Home screen - Challenge list (Expo Router)
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { ChallengeList } from '../../components/challenge/ChallengeList';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
-import { useMusicStore, selectChallenges, selectCurrentTrack, selectIsPlaying } from '../../stores/musicStore';
+import { useMusicStore, selectCurrentTrack } from '../../stores/musicStore';
 import { useUserStore } from '../../stores/userStore';
 import { THEME } from '../../constants/theme';
 import { useAppTheme } from '../../hooks/useAppTheme';
@@ -12,14 +12,15 @@ import type { MusicChallenge } from '../../types';
 import TrackPlayer from 'react-native-track-player';
 import { GlassButton } from '../../components/ui/GlassButton';
 import { useToast } from '../../hooks/useToast';
+ 
 
 export default function HomeScreen() {
   const { theme } = useAppTheme();
-  const challenges = useMusicStore(selectChallenges);
+  
   const currentTrack = useMusicStore(selectCurrentTrack);
-  const isPlaying = useMusicStore(selectIsPlaying);
   const { play, resume } = useMusicPlayer();
   const toast = useToast();
+  
 
   const handlePlayChallenge = async (challenge: MusicChallenge) => {
     try {
@@ -79,10 +80,12 @@ export default function HomeScreen() {
           useMusicStore.getState().setCurrentPosition(0);
           try { await TrackPlayer.reset(); } catch {}
           toast.info('Challenge statuses have been reset.');
+          
         }}
         variant="secondary"
         style={{ marginBottom: THEME.spacing.md }}
       />
+      
       <ChallengeList
         onPlay={handlePlayChallenge}
         onPressCard={(challenge) => router.push({ pathname: '/(modals)/challenge/[id]', params: { id: challenge.id } })}
