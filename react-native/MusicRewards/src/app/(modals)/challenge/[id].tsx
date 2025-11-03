@@ -2,7 +2,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { GlassCard, GlassButton } from '../../../components/ui/GlassCard';
+import { GlassCard } from '../../../components/ui/GlassCard';
+import { GlassButton } from '../../../components/ui/GlassButton';
 import { THEME } from '../../../constants/theme';
 import { useMusicStore } from '../../../stores/musicStore';
 import { useMusicPlayer } from '../../../hooks/useMusicPlayer';
@@ -93,7 +94,7 @@ export default function ChallengeDetailModal() {
           <GlassButton title="Open Player" onPress={async () => {
             if (!challenge) return;
             if (!currentTrack || currentTrack.id !== challenge.id) {
-              await play(challenge as any);
+              await play(challenge);
             }
             router.push('/(modals)/player');
           }} variant="primary" />

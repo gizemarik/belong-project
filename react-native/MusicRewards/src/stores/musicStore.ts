@@ -15,6 +15,7 @@ interface MusicStore {
   // Actions
   loadChallenges: () => void;
   setCurrentTrack: (track: MusicChallenge) => void;
+  clearCurrentTrack: () => void;
   updateProgress: (challengeId: string, progress: number) => void;
   markChallengeComplete: (challengeId: string) => void;
   setIsPlaying: (playing: boolean) => void;
@@ -37,6 +38,10 @@ export const useMusicStore = create<MusicStore>()(
 
       setCurrentTrack: (track: MusicChallenge) => {
         set({ currentTrack: track });
+      },
+
+      clearCurrentTrack: () => {
+        set({ currentTrack: null });
       },
 
       updateProgress: (challengeId: string, progress: number) => {

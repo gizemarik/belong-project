@@ -26,6 +26,23 @@ export default async function playbackService() {
     TrackPlayer.seekTo(event.position);
   });
 
+  // Handle audio focus / ducking (interruptions)
+  TrackPlayer.addEventListener(Event.RemoteDuck, (event) => {
+    // If the system requests pause (e.g., phone call), pause playback
+    if (event.paused) {
+      TrackPlayer.pause();
+      return;
+    }
+    // Ducking indicates another app needs temporary audio focus
+    if (event.ducking) {
+      // Lower the volume while ducking
+      TrackPlayer.setVolume(0.5);
+    } else {
+      // Restore full volume when ducking ends
+      TrackPlayer.setVolume(1.0);
+    }
+  });
+
   // Handle playback queue ended
   TrackPlayer.addEventListener(Event.PlaybackQueueEnded, (event) => {
     console.log('Playback queue ended:', event);

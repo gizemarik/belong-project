@@ -1,5 +1,5 @@
 // Player modal - Full-screen audio player (Expo Router modal)
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,11 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
-import { GlassCard, GlassButton } from '../../components/ui/GlassCard';
+import { GlassCard } from '../../components/ui/GlassCard';
+import { GlassButton } from '../../components/ui/GlassButton';
 import { useMusicPlayer } from '../../hooks/useMusicPlayer';
 import { THEME } from '../../constants/theme';
-import { usePointsCounter } from '../../hooks/usePointsCounter';
+import { PointsCounter } from '../../components/ui/PointsCounter';
 import { useMusicStore } from '../../stores/musicStore';
 
 export default function PlayerModal() {
@@ -28,7 +29,7 @@ export default function PlayerModal() {
     loading,
     error
   } = useMusicPlayer();
-  const { pointsEarned } = usePointsCounter();
+  const [progressWidth, setProgressWidth] = useState(1);
 
   // Read canonical challenge data from the store by id to avoid stale flags
   const canonicalChallenge = useMusicStore((s) =>
@@ -109,10 +110,7 @@ export default function PlayerModal() {
           <Text style={styles.trackArtist}>{currentTrack.artist}</Text>
           <Text style={styles.trackDescription}>{currentTrack.description}</Text>
 
-          <View style={styles.pointsContainer}>
-            <Text style={styles.pointsLabel}>Challenge Points</Text>
-            <Text style={styles.pointsValue}>{pointsEarned} / {currentTrack.points}</Text>
-          </View>
+          <PointsCounter />
         </GlassCard>
 
         {/* Progress Section */}
@@ -122,9 +120,10 @@ export default function PlayerModal() {
           {/* Progress Bar */}
           <TouchableOpacity
             style={styles.progressTrack}
+            onLayout={(e) => setProgressWidth(e.nativeEvent.layout.width || 1)}
             onPress={(event) => {
-              const { locationX, width } = event.nativeEvent as any;
-              const percentage = (locationX / width) * 100;
+              const locationX = (event.nativeEvent as { locationX: number }).locationX;
+              const percentage = progressWidth > 0 ? (locationX / progressWidth) * 100 : 0;
               handleSeek(percentage);
             }}
           >

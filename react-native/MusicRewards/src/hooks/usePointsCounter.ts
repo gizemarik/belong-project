@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMusicStore, selectCurrentTrack } from '../stores/musicStore';
+import { useProgress } from 'react-native-track-player';
 import type { PointsCounterConfig, UsePointsCounterReturn } from '../types';
 
 export function usePointsCounter(): UsePointsCounterReturn {
   const currentTrack = useMusicStore(selectCurrentTrack);
-  const challenges = useMusicStore((s) => s.challenges);
+  const tpProgress = useProgress();
 
   const [isActive, setIsActive] = useState(false);
   const [config, setConfig] = useState<PointsCounterConfig | null>(null);
@@ -12,19 +13,15 @@ export function usePointsCounter(): UsePointsCounterReturn {
   const [progress, setProgress] = useState(0);
   const lastChallengeIdRef = useRef<string | null>(null);
 
-  const challengeProgress = useMemo(() => {
-    if (!config) return 0;
-    const c = challenges.find((ch) => ch.id === config.challengeId);
-    return c ? c.progress : 0;
-  }, [challenges, config]);
-
   useEffect(() => {
     if (!isActive || !config) return;
-    const effective = Math.min(challengeProgress, 90);
-    const earned = Math.floor((effective / 90) * config.totalPoints);
-    setProgress(challengeProgress);
+    const duration = tpProgress.duration || 0;
+    const position = tpProgress.position || 0;
+    const pct = duration > 0 ? (position / duration) * 100 : 0;
+    const earned = Math.floor((pct / 100) * config.totalPoints);
+    setProgress(pct);
     setPointsEarned(earned);
-  }, [challengeProgress, isActive, config]);
+  }, [tpProgress.position, tpProgress.duration, isActive, config]);
 
   useEffect(() => {
     if (currentTrack && currentTrack.id !== lastChallengeIdRef.current) {

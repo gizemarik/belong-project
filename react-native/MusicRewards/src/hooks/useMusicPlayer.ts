@@ -34,12 +34,16 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
 
   // Track playback state changes (guard against update loops)
   const prevIsPlayingRef = useRef<boolean | null>(null);
-  useEffect(() => {
-    let stateValue: any = playbackState;
-    if (typeof playbackState === 'object' && playbackState !== null && 'state' in playbackState) {
-      stateValue = (playbackState as any).state;
+  function getPlaybackStateValue(ps: State | { state: State } | undefined): State | undefined {
+    if (ps === undefined || ps === null) return undefined;
+    if (typeof ps === 'object' && 'state' in ps) {
+      return (ps as { state: State }).state;
     }
-    const isCurrentlyPlaying = stateValue === State.Playing;
+    return ps as State;
+  }
+  useEffect(() => {
+    const current = getPlaybackStateValue(playbackState);
+    const isCurrentlyPlaying = current === State.Playing;
     if (prevIsPlayingRef.current === isCurrentlyPlaying) return;
     prevIsPlayingRef.current = isCurrentlyPlaying;
     setIsPlaying(isCurrentlyPlaying);
@@ -67,8 +71,8 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     updateProgress(currentTrackId, percent);
     lastUpdateRef.current = { id: currentTrackId, percent: rounded };
 
-    // Completion check (90% threshold)
-    if (percent >= 90 && currentTrack && !currentTrack.completed) {
+    // Completion check at 100%
+    if (percent >= 100 && currentTrack && !currentTrack.completed) {
       markChallengeComplete(currentTrackId);
       completeChallenge(currentTrackId);
       addPoints(currentTrack.points);
@@ -76,10 +80,19 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
   }, [progress.position, progress.duration, currentTrackId, setCurrentPosition, updateProgress, markChallengeComplete, completeChallenge, addPoints, currentTrack]);
 
   // Handle track player events
-  useTrackPlayerEvents([Event.PlaybackError], (event) => {
+  useTrackPlayerEvents([Event.PlaybackError, Event.PlaybackQueueEnded], (event) => {
     if (event.type === Event.PlaybackError) {
       setError(`Playback error: ${event.message}`);
       setLoading(false);
+    } else if (event.type === Event.PlaybackQueueEnded) {
+      // Ensure finalization at track end
+      const id = currentTrack?.id;
+      if (id && !currentTrack?.completed) {
+        updateProgress(id, 100);
+        markChallengeComplete(id);
+        completeChallenge(id);
+        if (currentTrack) addPoints(currentTrack.points);
+      }
     }
   });
 
@@ -163,35 +176,26 @@ export const useMusicPlayer = (): UseMusicPlayerReturn => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTrack?.id]);
 
-  const pause = useCallback(async () => {
-    try {
-      await TrackPlayer.pause();
-    } catch (err) {
+  const pause = useCallback(() => {
+    TrackPlayer.pause().catch((err) => {
       console.error('Pause error:', err);
-    }
+    });
   }, []);
 
-  const seekTo = useCallback(async (seconds: number) => {
-    try {
-      await TrackPlayer.seekTo(seconds);
-    } catch (err) {
+  const seekTo = useCallback((seconds: number) => {
+    TrackPlayer.seekTo(seconds).catch((err) => {
       console.error('Seek error:', err);
-    }
+    });
   }, []);
 
-  const resume = useCallback(async () => {
-    try {
-      await TrackPlayer.play();
-    } catch (err) {
+  const resume = useCallback(() => {
+    TrackPlayer.play().catch((err) => {
       console.error('Resume error:', err);
-    }
+    });
   }, []);
 
   // Extract value for isPlaying return as well
-  let stateValue: any = playbackState;
-  if (typeof playbackState === 'object' && playbackState !== null && 'state' in playbackState) {
-    stateValue = playbackState.state;
-  }
+  const stateValue = getPlaybackStateValue(playbackState);
   return {
     isPlaying: stateValue === State.Playing,
     currentTrack,

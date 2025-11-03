@@ -2,11 +2,7 @@
 import React from 'react';
 import { 
   View, 
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
   ViewStyle, 
-  TextStyle,
   StyleSheet 
 } from 'react-native';
 import { BlurView } from 'expo-blur';
@@ -63,73 +59,8 @@ export const GlassCard: React.FC<GlassCardProps> = ({
     );
 };
 
-// Glass Button Component
-interface GlassButtonProps {
-  title: string;
-  onPress: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-  variant?: 'primary' | 'secondary';
-}
-
-export const GlassButton: React.FC<GlassButtonProps> = ({
-  title,
-  onPress,
-  loading = false,
-  disabled = false,
-  style,
-  textStyle,
-  variant = 'primary',
-}) => {
-  const gradientColors = variant === 'primary' 
-    ? THEME.glass.gradientColors.primary
-    : THEME.glass.gradientColors.secondary;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.7}
-      style={style}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-    >
-      <GlassCard
-        gradientColors={gradientColors}
-        style={styles.button}
-        contentPadding={0}
-      >
-        <View style={styles.buttonContent}>
-          {loading ? (
-            <ActivityIndicator color={THEME.colors.text.primary} size="small" />
-          ) : (
-            <Text style={[styles.buttonText, textStyle]}>{title}</Text>
-          )}
-        </View>
-      </GlassCard>
-    </TouchableOpacity>
-  );
-};
-
 const styles = StyleSheet.create({
   contentContainer: {
     padding: THEME.spacing.md,
-  },
-  button: {
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonContent: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: THEME.colors.text.primary,
-    fontSize: THEME.fonts.sizes.md,
-    fontWeight: '600',
   },
 });

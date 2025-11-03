@@ -62,10 +62,12 @@ export const setupTrackPlayer = async (): Promise<void> => {
 
     console.log('TrackPlayer setup complete');
     playerSetup = true;
-  } catch (error) {
+  } catch (error: unknown) {
     // If already initialized, mark flag and continue
-    const message = (error as any)?.message || '';
-    if (typeof message === 'string' && message.toLowerCase().includes('already been initialized')) {
+    const message = (typeof error === 'object' && error && 'message' in error)
+      ? String((error as { message?: unknown }).message ?? '')
+      : '';
+    if (message.toLowerCase().includes('already been initialized')) {
       playerSetup = true;
       return;
     }
@@ -158,7 +160,7 @@ export const getTrackDuration = async (): Promise<number> => {
 };
 
 // Handle playback errors
-export const handlePlaybackError = (error: any) => {
+export const handlePlaybackError = (error: unknown) => {
   console.error('Playback error:', error);
   
   // You can add error reporting here
@@ -166,8 +168,12 @@ export const handlePlaybackError = (error: any) => {
   // crashlytics().recordError(error);
   
   return {
-    message: error?.message || 'Unknown playback error',
-    code: error?.code || 'UNKNOWN_ERROR',
+    message: (typeof error === 'object' && error && 'message' in error)
+      ? String((error as { message?: unknown }).message ?? 'Unknown playback error')
+      : 'Unknown playback error',
+    code: (typeof error === 'object' && error && 'code' in error)
+      ? String((error as { code?: unknown }).code ?? 'UNKNOWN_ERROR')
+      : 'UNKNOWN_ERROR',
   };
 };
 

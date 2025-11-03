@@ -9,7 +9,7 @@ import { useUserStore } from '../../stores/userStore';
 import { THEME } from '../../constants/theme';
 import type { MusicChallenge } from '../../types';
 import TrackPlayer from 'react-native-track-player';
-import { GlassButton } from '../../components/ui/GlassCard';
+import { GlassButton } from '../../components/ui/GlassButton';
 
 export default function HomeScreen() {
   const challenges = useMusicStore(selectChallenges);
@@ -54,7 +54,7 @@ export default function HomeScreen() {
           // Reset user and music stores and TrackPlayer
           useUserStore.getState().resetProgress();
           useMusicStore.getState().loadChallenges();
-          useMusicStore.getState().setCurrentTrack(null as any);
+          useMusicStore.getState().clearCurrentTrack();
           useMusicStore.getState().setIsPlaying(false);
           useMusicStore.getState().setCurrentPosition(0);
           try { await TrackPlayer.reset(); } catch {}
