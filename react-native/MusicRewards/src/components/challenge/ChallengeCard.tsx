@@ -15,7 +15,7 @@ interface ChallengeCardProps {
   onPressCard?: (challenge: MusicChallenge) => void;
 }
 
-export const ChallengeCard: React.FC<ChallengeCardProps> = ({
+const ChallengeCardBase: React.FC<ChallengeCardProps> = ({
   challenge,
   onPlay,
   isCurrentTrack = false,
@@ -121,6 +121,22 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
     </TouchableOpacity>
   );
 };
+
+export const ChallengeCard = React.memo(ChallengeCardBase, (prev, next) => {
+  // Re-render only when relevant fields change
+  return (
+    prev.isCurrentTrack === next.isCurrentTrack &&
+    prev.isPlaying === next.isPlaying &&
+    prev.challenge.id === next.challenge.id &&
+    prev.challenge.progress === next.challenge.progress &&
+    prev.challenge.completed === next.challenge.completed &&
+    prev.challenge.points === next.challenge.points &&
+    prev.challenge.title === next.challenge.title &&
+    prev.challenge.artist === next.challenge.artist &&
+    prev.onPlay === next.onPlay &&
+    prev.onPressCard === next.onPressCard
+  );
+});
 
 const styles = StyleSheet.create({
   card: {

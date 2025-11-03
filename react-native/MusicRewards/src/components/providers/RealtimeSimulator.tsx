@@ -22,7 +22,9 @@ export const RealtimeSimulator: React.FC = () => {
         if (open.length === 0) return;
 
         // Pick random challenge and bump progress by 5-15%
-        const target = open[Math.floor(Math.random() * open.length)];
+        const idx = Math.floor(Math.random() * open.length);
+        const target = open[idx];
+        if (!target) return;
         const bump = 5 + Math.floor(Math.random() * 11);
         const next = Math.min(100, (target.progress || 0) + bump);
         updateProgress(target.id, next);

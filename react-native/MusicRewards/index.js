@@ -1,12 +1,6 @@
-// Register the playback service for react-native-track-player
-import { AppRegistry } from 'react-native';
+// Expo Router entry and playback service registration
+import 'expo-router/entry';
 import TrackPlayer from 'react-native-track-player';
 
-// Import your main app component
-import App from './App';
-
-// Register the main application
-AppRegistry.registerComponent('main', () => App);
-
-// Register the playback service
+// Register the playback service once at the app entrypoint
 TrackPlayer.registerPlaybackService(() => require('./src/services/playbackService'));

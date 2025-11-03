@@ -38,9 +38,9 @@ export const useSyncStore = create<SyncStore>()(
       name: 'sync-store',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
-      migrate: (persisted: any, fromVersion: number) => {
-        const base = persisted ?? {};
-        const outbox = Array.isArray(base.outbox) ? base.outbox : [];
+      migrate: (persisted: unknown, fromVersion: number) => {
+        const base = (persisted && typeof persisted === 'object') ? (persisted as Record<string, unknown>) : {};
+        const outbox = Array.isArray(base.outbox) ? (base.outbox as unknown[]) : [];
         return { outbox };
       },
     }

@@ -80,10 +80,10 @@ export const useUserStore = create<UserStore>()(
       name: 'user-store',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
-      migrate: (persisted: any, fromVersion: number) => {
-        const base = persisted ?? {};
+      migrate: (persisted: unknown, fromVersion: number) => {
+        const base = (persisted && typeof persisted === 'object') ? (persisted as Record<string, unknown>) : {};
         const totalPoints = typeof base.totalPoints === 'number' ? base.totalPoints : 0;
-        const completedChallenges = Array.isArray(base.completedChallenges) ? base.completedChallenges : [];
+        const completedChallenges = Array.isArray(base.completedChallenges) ? (base.completedChallenges as unknown[]).map((x) => String(x)) : [];
         return { totalPoints, completedChallenges };
       },
       partialize: (state) => ({

@@ -1,81 +1,90 @@
-# MusicRewards Test App
+# MusicRewards (Belong Assessment)
 
-This is the recommended project structure for the Belong React Native assessment. Use this as your starting point!
+Modern React Native app demonstrating audio playback with points rewards, glass design system, Expo Router navigation, and robust state management using Zustand.
 
-## 🚀 Setup Instructions
+## 🚀 Setup & Run
 
-**📖 See [../SETUP.md](../SETUP.md) for complete setup instructions**
+Prerequisites:
+- Node 18+
+- Xcode (for iOS), Android Studio (for Android)
+- Expo CLI (optional)
 
-This test-app folder contains the complete starter code structure for your MusicRewards implementation. Don't run setup commands from here - follow the main setup guide above.
-
-**Quick Reference:**
+Install and run:
 ```bash
-# From the parent react-native/ folder:
-cp -r test-app ~/MusicRewards
-cd ~/MusicRewards
-npx create-expo-app . --template typescript
 npm install
+# iOS (first time)
+npx pod-install
+
+# Start Metro
 npx expo start
+
+# Run iOS Simulator
+npx expo run:ios
+
+# Run Android Emulator / Device
+npx expo run:android
 ```
+
+Notes:
+- iOS background audio is enabled via `UIBackgroundModes: audio`.
+- Android will continue in background normally; when the app is deliberately closed from recents, playback stops and notification is removed.
+
+## 🧭 How to Use
+1. Open the app → Challenges tab.
+2. Tap a challenge → Open Player.
+3. Play audio, seek with the progress bar or ±10s buttons.
+4. Earn points as you listen; progress persists across restarts.
+5. Profile tab shows total points and completions.
+6. Theme toggle: available on the Profile screen (switch between dark/light).
+7. Reset button (Home): included for local testing to quickly reset progress/state during development.
 
 ## 📁 Project Structure
-
-This structure follows Belong's mobile app architecture patterns:
-
 ```
 src/
-├── app/                    # Expo Router pages
-│   ├── (tabs)/
-│   │   ├── index.tsx       # Home screen with challenge list
-│   │   ├── profile.tsx     # Profile with user progress
-│   │   └── _layout.tsx     # Tab navigation setup
-│   ├── (modals)/
-│   │   ├── player.tsx      # Full-screen audio player
-│   │   └── _layout.tsx     # Modal navigation setup
-│   └── _layout.tsx         # Root layout
+├── app/
+│   ├── (tabs)/              # Tabs & screens
+│   ├── (modals)/            # Modal routes (player, details)
+│   └── _layout.tsx          # Root layout (ErrorBoundary, providers)
 ├── components/
-│   ├── ui/                 # Glass design system components
-│   │   ├── GlassCard.tsx
-│   │   ├── GlassButton.tsx
-│   │   └── PointsCounter.tsx
-│   └── challenge/          # Challenge-specific components
-│       ├── ChallengeCard.tsx
-│       └── ChallengeList.tsx
-├── hooks/                  # Business logic hooks
-│   ├── useMusicPlayer.ts
-│   ├── usePointsCounter.ts
-│   └── useChallenges.ts
-├── stores/                 # Zustand stores
-│   ├── musicStore.ts
-│   └── userStore.ts
-├── services/               # External services
-│   └── audioService.ts
-├── constants/              # Theme and configuration
-│   └── theme.ts
-└── types/                  # TypeScript definitions
-    └── index.ts
+│   ├── providers/           # ErrorBoundary, gates, managers
+│   ├── ui/                  # Glass design system, visualizations
+│   └── challenge/           # Challenge UI
+├── hooks/                   # Business logic hooks
+├── services/                # TrackPlayer setup, background service
+├── stores/                  # Zustand stores with persistence
+├── constants/               # Theme & sample data
+├── types/                   # TS shared types
+└── utils/                   # Haptics, etc.
 ```
 
-## 🎵 Audio Files
+## 🧱 Architecture Overview
+- See `ARCHITECTURE.md` for detailed design decisions.
+- Highlights:
+  - Zustand stores (`musicStore`, `userStore`, `syncStore`) with selective persistence.
+  - Hooks (`useMusicPlayer`, `useChallenges`, `usePointsCounter`) isolate business logic.
+  - TrackPlayer configured with background service and interruption handling.
+  - Glass design system using `expo-blur` and `expo-linear-gradient`.
 
-The assessment uses these pre-hosted tracks:
-- **Track 1:** Camo & Krooked - All Night (3:39, 150 points)
-- **Track 2:** Roni Size - New Forms (7:44, 300 points)
+## ⚙️ Platform Notes
+- iOS: `Info.plist` includes `UIBackgroundModes` → `audio`.
+- Android: `appKilledPlaybackBehavior` set to `StopPlaybackAndRemoveNotification` (deliberate kill stops playback).
 
-URLs and sample data are in [`../assets/audio/README.md`](../assets/audio/README.md)
+## 🧪 Known Issues / Limitations
+- No backend; `syncStore.flushNow` is a placeholder.
+- Interruption event typing uses a temporary any due to library typings; code is isolated and annotated.
+- Demo tracks are remote URLs; ensure connectivity.
 
-## 🎯 Implementation Order
+## 📹 Demo Video
+Please provide a 3–4 minute video (or link) covering:
+- App launch and navigation
+- Playing audio, seeking, and earning points
+- Closing/reopening app (persistence)
+- Switching tracks, viewing profile
 
-1. **Set up basic navigation structure**
-2. **Create Zustand stores (musicStore.ts, userStore.ts)**
-3. **Build glass design components (GlassCard, GlassButton)**
-4. **Implement useMusicPlayer hook with TrackPlayer**
-5. **Create challenge list and player modal UI**
-6. **Add points counter and progress tracking**
-7. **Test on both platforms and add error handling**
+## 📝 Submission
+- Public or private GitHub repo
+- Include this README and `ARCHITECTURE.md`
+- Attach demo video file or link in the README
 
-## 📖 Reference
-
-See the main [README.md](../README.md) for detailed technical requirements and evaluation criteria.
-
-Good luck! 🚀🎵
+## 📄 License
+For assessment purposes only.

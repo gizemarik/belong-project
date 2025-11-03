@@ -37,6 +37,9 @@ export const ChallengeList: React.FC<ChallengeListProps> = ({
       keyExtractor={(item) => item.id}
       contentContainerStyle={contentContainerStyle ?? styles.listContainer}
       showsVerticalScrollIndicator={false}
+      initialNumToRender={6}
+      windowSize={10}
+      removeClippedSubviews
     />
   );
 };

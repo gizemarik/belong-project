@@ -37,10 +37,12 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
 
   // Track playback state changes (guard against update loops)
   const prevIsPlayingRef = useRef<boolean | null>(null);
-  function getPlaybackStateValue(ps: State | { state: State } | undefined): State | undefined {
+  const didManualSeekRef = useRef<boolean>(false);
+  type MaybePlaybackState = State | { state?: State } | undefined;
+  function getPlaybackStateValue(ps: MaybePlaybackState): State | undefined {
     if (ps === undefined || ps === null) return undefined;
     if (typeof ps === 'object' && 'state' in ps) {
-      return (ps as { state: State }).state;
+      return (ps as { state?: State }).state;
     }
     return ps as State;
   }
@@ -55,11 +57,25 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
   // Update position and calculate progress/points (avoid loops by keying on id and throttling writes)
   const currentTrackId = currentTrack?.id;
   const lastUpdateRef = useRef<{ id?: string; percent?: number }>({});
+  const lastUpdateTimeRef = useRef<number>(0);
   useEffect(() => {
     if (!currentTrackId) return;
-    if (!progress.duration || progress.duration <= 0) return;
+    const baseDuration = (currentTrack?.duration && currentTrack.duration > 0)
+      ? currentTrack.duration
+      : (progress.duration || 0);
+    if (!baseDuration || baseDuration <= 0) return;
 
-    const percent = (progress.position / progress.duration) * 100;
+    const currentlyPlaying = getPlaybackStateValue(playbackState) === State.Playing;
+    // Avoid updating progress when not playing unless it was a manual seek
+    if (!currentlyPlaying && !didManualSeekRef.current) return;
+
+    // Time-based throttle to reduce store churn
+    const now = Date.now();
+    if (!didManualSeekRef.current && now - lastUpdateTimeRef.current < 250) {
+      return;
+    }
+
+    const percent = (progress.position / baseDuration) * 100;
     // Reduce churn to 0.1% steps
     const rounded = Math.floor(percent * 10) / 10;
 
@@ -73,6 +89,12 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
     setCurrentPosition(progress.position);
     updateProgress(currentTrackId, percent);
     lastUpdateRef.current = { id: currentTrackId, percent: rounded };
+    lastUpdateTimeRef.current = now;
+
+    // Reset manual seek flag after reflecting the change
+    if (didManualSeekRef.current) {
+      didManualSeekRef.current = false;
+    }
 
     // Completion check at 100%
     if (percent >= 100 && currentTrack && !currentTrack.completed) {
@@ -201,6 +223,7 @@ export const useMusicPlayer = (): UseMusicPlayerReturn & { rate: number; setRate
   }, []);
 
   const seekTo = useCallback((seconds: number) => {
+    didManualSeekRef.current = true;
     TrackPlayer.seekTo(seconds).catch((err) => {
       console.error('Seek error:', err);
       toast.error('Seek failed');

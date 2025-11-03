@@ -65,6 +65,9 @@ export function AudioVisualizer(props: AudioVisualizerProps) {
     } else {
       cancelAnimation(basePhase);
     }
+    return () => {
+      cancelAnimation(basePhase);
+    };
   }, [isPlaying, rate]);
 
   const seeded = useMemo(() => createSeededRandom(String(seed)), [seed]);

@@ -31,10 +31,11 @@ export default async function playbackService() {
   });
 
   // Handle audio focus / ducking (phone calls, navigation prompts, etc.)
-  TrackPlayer.addEventListener(Event.RemoteDuck, async (event) => {
+  type RemoteDuckEventPayload = { paused?: boolean; permanent?: boolean };
+  TrackPlayer.addEventListener(Event.RemoteDuck, async (event: RemoteDuckEventPayload) => {
     try {
       // Explicit/phone-call pause or permanent focus loss: pause and don't auto-resume
-      if (event.paused || (event as any).permanent === true) {
+      if (event?.paused || event?.permanent === true) {
         resumeAfterDuck = false;
         isDucked = false;
         await TrackPlayer.pause();
@@ -80,6 +81,39 @@ export default async function playbackService() {
       useToastStore.getState().show('Playback error', { variant: 'error' });
     } catch {}
   });
+
+  // Handle iOS interruptions (phone calls, Siri, etc.)
+  // Best-effort: treat unknown shapes conservatively
+  try {
+    type InterruptionEventPayload = { paused?: boolean; interruptionType?: 'began' | 'ended' | string };
+    // TODO: Temporary any until the library exposes a typed Interruption event in Event enum
+    TrackPlayer.addEventListener('interruption' as any, async (evt: any) => {
+      try {
+        const event = evt as InterruptionEventPayload;
+        // Common shapes observed: { paused: boolean } or { interruptionType: 'began' | 'ended' }
+        const began = event?.paused === true || String(event?.interruptionType || '').toLowerCase() === 'began';
+        const ended = event?.paused === false || String(event?.interruptionType || '').toLowerCase() === 'ended';
+        if (began) {
+          resumeAfterDuck = false;
+          isDucked = false;
+          await TrackPlayer.pause();
+          return;
+        }
+        if (ended) {
+          // Resume only if we were playing before (conservative approach)
+          try {
+            const state = await TrackPlayer.getState();
+            if (state !== State.Playing) {
+              await TrackPlayer.play();
+            }
+          } catch {}
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('Interruption handling error', e);
+      }
+    });
+  } catch {}
 }
 
 // Also export as module.exports for compatibility

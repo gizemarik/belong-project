@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import type { PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { useLocalSearchParams, router } from 'expo-router';
 import { GlassCard } from '../../../components/ui/GlassCard';
@@ -27,11 +28,11 @@ export default function ChallengeDetailModal() {
   // Swipe-to-close (downward) gesture (MUST be before any conditional returns)
   const panTransY = React.useRef(0);
   const panVelY = React.useRef(0);
-  const onGestureEvent = (e: any) => {
+  const onGestureEvent = (e: PanGestureHandlerGestureEvent) => {
     panTransY.current = e.nativeEvent.translationY || 0;
     panVelY.current = e.nativeEvent.velocityY || 0;
   };
-  const onHandlerStateChange = (e: any) => {
+  const onHandlerStateChange = (e: PanGestureHandlerStateChangeEvent) => {
     if (e.nativeEvent.state === State.END) {
       if (panTransY.current > 60 || panVelY.current > 800) {
         router.back();
@@ -119,12 +120,17 @@ export default function ChallengeDetailModal() {
               await play(challenge);
             }
             router.push('/(modals)/player');
-          }} variant="primary" />
+          }} variant="primary"
+            accessibilityLabel="Open player"
+            accessibilityHint="Opens the full screen audio player"
+          />
           <GlassButton
             title={challenge.completed ? 'Completed ✓' : 'Mark Completed'}
             onPress={handleMarkComplete}
             variant="secondary"
             disabled={challenge.completed}
+            accessibilityLabel={challenge.completed ? 'Challenge already completed' : 'Mark challenge as completed'}
+            accessibilityHint={challenge.completed ? 'No action available' : 'Marks this challenge as completed and awards points'}
           />
         </View>
       </GlassCard>

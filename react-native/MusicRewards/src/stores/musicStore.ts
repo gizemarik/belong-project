@@ -126,24 +126,29 @@ export const useMusicStore = create<MusicStore>()(
       name: 'music-store',
       storage: createJSONStorage(() => AsyncStorage),
       version: 1,
-      migrate: (persisted: any, fromVersion: number) => {
-        const base = persisted ?? {};
-        const challenges = Array.isArray(base.challenges) ? base.challenges : [];
-        const normalized = challenges.map((c: any) => {
-          const progressNum = typeof c?.progress === 'number' ? c.progress : 0;
+      migrate: (persisted: unknown, fromVersion: number) => {
+        const base = (persisted && typeof persisted === 'object') ? (persisted as Record<string, unknown>) : {};
+        const rawChallenges = Array.isArray(base.challenges) ? (base.challenges as unknown[]) : [];
+        const normalized = rawChallenges.map((cUnknown) => {
+          const c = (cUnknown && typeof cUnknown === 'object') ? (cUnknown as Record<string, unknown>) : {};
+          const progressNum = typeof c.progress === 'number' ? c.progress : 0;
+          const durationNum = typeof c.duration === 'number' ? c.duration : 0;
+          const pointsNum = typeof c.points === 'number' ? c.points : 0;
+          const diff = c.difficulty;
+          const difficulty = diff === 'easy' || diff === 'medium' || diff === 'hard' ? diff : 'easy';
           return {
-            id: String(c?.id ?? ''),
-            title: String(c?.title ?? ''),
-            artist: String(c?.artist ?? ''),
-            duration: typeof c?.duration === 'number' ? c.duration : 0,
-            points: typeof c?.points === 'number' ? c.points : 0,
-            audioUrl: String(c?.audioUrl ?? ''),
-            imageUrl: c?.imageUrl ? String(c.imageUrl) : undefined,
-            description: String(c?.description ?? ''),
-            difficulty: (c?.difficulty === 'easy' || c?.difficulty === 'medium' || c?.difficulty === 'hard') ? c.difficulty : 'easy',
-            completed: Boolean(c?.completed),
-            progress: Math.max(0, Math.min(100, progressNum)),
-            completedAt: c?.completedAt ? String(c.completedAt) : undefined,
+            id: String(c.id ?? ''),
+            title: String(c.title ?? ''),
+            artist: String(c.artist ?? ''),
+            duration: durationNum,
+            points: pointsNum,
+            audioUrl: String(c.audioUrl ?? ''),
+            imageUrl: c.imageUrl ? String(c.imageUrl as string) : undefined,
+            description: String(c.description ?? ''),
+            difficulty,
+            completed: Boolean(c.completed),
+            progress: Math.max(0, Math.min(100, Number(progressNum))),
+            completedAt: c.completedAt ? String(c.completedAt as string) : undefined,
           };
         });
         return { challenges: normalized };

@@ -1,5 +1,5 @@
 // Player modal - Full-screen audio player (Expo Router modal)
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,9 @@ import { SpeedControls } from '../../components/ui/SpeedControls';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Dimensions } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import type { PanGestureHandlerGestureEvent, PanGestureHandlerStateChangeEvent } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useMusicStore } from '../../stores/musicStore';
 
 export default function PlayerModal() {
@@ -40,6 +42,8 @@ export default function PlayerModal() {
     error
   } = useMusicPlayer();
   const [progressWidth, setProgressWidth] = useState(1);
+  // Animated progress percent (0..100)
+  const progressPct = useSharedValue(0);
   const confettiRef = useRef<any>(null);
   // Read canonical challenge data from the store by id to avoid stale flags
   const canonicalChallenge = useMusicStore((s) =>
@@ -58,11 +62,11 @@ export default function PlayerModal() {
   // Swipe-to-close (downward) gesture (MUST be before any conditional returns)
   const panTransY = useRef(0);
   const panVelY = useRef(0);
-  const onGestureEvent = (e: any) => {
+  const onGestureEvent = (e: PanGestureHandlerGestureEvent) => {
     panTransY.current = e.nativeEvent.translationY || 0;
     panVelY.current = e.nativeEvent.velocityY || 0;
   };
-  const onHandlerStateChange = (e: any) => {
+  const onHandlerStateChange = (e: PanGestureHandlerStateChangeEvent) => {
     if (e.nativeEvent.state === State.END) {
       if (panTransY.current > 60 || panVelY.current > 800) {
         router.back();
@@ -92,6 +96,19 @@ export default function PlayerModal() {
       seekTo(newPosition);
     }
   };
+
+  // Animate progress smoothly whenever it changes
+  const computedProgress = getProgress();
+  useEffect(() => {
+    const next = Math.max(0, Math.min(100, computedProgress || 0));
+    progressPct.value = withTiming(next, { duration: 240 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [computedProgress]);
+
+  const progressFillAnimatedStyle = useAnimatedStyle(() => {
+    const px = (progressWidth || 0) * (progressPct.value / 100);
+    return { width: px };
+  }, [progressWidth]);
 
   const handlePlayPause = async () => {
     if (isPlaying) {
@@ -178,14 +195,12 @@ export default function PlayerModal() {
               const percentage = progressWidth > 0 ? (locationX / progressWidth) * 100 : 0;
               handleSeek(percentage);
             }}
+            accessibilityRole="progressbar"
+            accessibilityLabel="Listening progress"
+            accessibilityValue={{ min: 0, max: 100, now: Math.round(getProgress()) }}
           >
             <View style={styles.progressBackground}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${getProgress()}%` }
-                ]}
-              />
+              <Animated.View style={[styles.progressFill, progressFillAnimatedStyle]} />
             </View>
           </TouchableOpacity>
 
@@ -209,6 +224,8 @@ export default function PlayerModal() {
               onPress={() => handleSeek(Math.max(0, getProgress() - (10 / duration) * 100))}
               variant="secondary"
               style={styles.controlButton}
+              accessibilityLabel="Rewind 10 seconds"
+              accessibilityHint="Double tap to rewind ten seconds"
             />
 
             <GlassButton
@@ -217,6 +234,8 @@ export default function PlayerModal() {
               variant="primary"
               style={styles.mainControlButton}
               loading={loading}
+              accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+              accessibilityHint={isPlaying ? 'Double tap to pause playback' : 'Double tap to start playback'}
             />
 
             <GlassButton
@@ -224,6 +243,8 @@ export default function PlayerModal() {
               onPress={() => handleSeek(Math.min(100, getProgress() + (10 / duration) * 100))}
               variant="secondary"
               style={styles.controlButton}
+              accessibilityLabel="Forward 10 seconds"
+              accessibilityHint="Double tap to forward ten seconds"
             />
           </View>
 
@@ -278,7 +299,6 @@ const styles = StyleSheet.create({
     padding: THEME.spacing.lg,
     justifyContent: 'space-between',
   },
-  confettiOverlay: undefined as any,
   confettiOverlayRoot: {
     position: 'absolute',
     top: 0,
